@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net5.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Res\Font\calibrib.ttf_sdf.2048.png" />
+    <None Remove="Res\Font\calibrib.ttf_sdf.2048.txt" />
+    <None Remove="Res\Font\lucon.ttf_sdf.1024.png" />
+    <None Remove="Res\Font\lucon.ttf_sdf.1024.txt" />
+    <None Remove="Res\Shaders\Common\gamma.glsl" />
+    <None Remove="Res\Shaders\debugaudiodata.glsl" />
+    <None Remove="Res\Shaders\debugspectrum.glsl" />
+    <None Remove="Res\Shaders\Effects\pulse.glsl" />
+    <None Remove="Res\Shaders\shaderhost.glsl" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Res\Font\calibrib.ttf_sdf.2048.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Font\calibrib.ttf_sdf.2048.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Font\lucon.ttf_sdf.1024.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Font\lucon.ttf_sdf.1024.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Shaders\Common\gamma.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Shaders\debugaudiodata.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Shaders\debugspectrum.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Shaders\Effects\pulse.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Res\Shaders\shaderhost.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="NAudio" Version="1.10.0" />
+    <PackageReference Include="NAudio.Flac.Port" Version="1.0.0" />
+    <PackageReference Include="NAudio.Vorbis" Version="1.2.0" />
+    <PackageReference Include="OpenTK4Extensions" Version="1.0.5" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>
