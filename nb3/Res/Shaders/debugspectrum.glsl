@@ -171,6 +171,23 @@ vec4 getSample_sharpen_in_time_smooth_in_freq(sampler2D spectrum, vec2 t)
 	return s;
 }
 
+vec4 getSampleMovingAvg(sampler2D spectrum, vec2 t, float radius)
+{
+	vec2 total = vec2(0.0);
+
+	for(float i=0.1;i<1.0;i+=0.1)
+	{
+		total += texture2D(spectrum,t + texel.xy * i * radius).rg;
+		total += texture2D(spectrum,t - texel.xy * i * radius).rg;
+	}
+	total /= 20.0;
+
+	vec4 s = vec4(total.rg,(total.r+total.g)*0.5, 0.0);
+
+	return s;
+}
+
+
 
 vec4 scaleSpectrum(vec4 s)
 {
@@ -373,6 +390,14 @@ float getCurrentAudioDataSample(float index)
 	return s;
 }
 
+float getMultiPeakFilterMarkerIntensity(float markerIndex, vec2 t)
+{
+	float df = getCurrentAudioDataSample(5. + markerIndex * 2.);  // freq+level pairs starting at index 5
+	float da = min(1.0,getCurrentAudioDataSample(6. + markerIndex * 2.)*10.0);
+
+	return ((1.0 - clamp(abs(df - t.y) * 300.0,0.0,1.0))*da*da * (1.0 - smoothstep(0.0,0.1,1.0-t.x)));
+}
+
 vec4 renderGraph_multi(vec2 t)
 {
 	vec3 col = vec3(0.0);
@@ -385,7 +410,15 @@ vec4 renderGraph_multi(vec2 t)
 	for (float i = 0.0;i<1.0;i+=0.05)
 	{
 		tx = texel.x * i * 10.0;
+
+		// raw
 		float s = scaleSpectrum(getSample(spectrumTex,vec2(ty,currentPositionEst - tx))).b; 
+		
+		// peak extraction
+		//float s2 = scaleSpectrum(getSampleMovingAvg(spectrumTex,vec2(ty,currentPositionEst - tx),20.0)).b; 
+		//float s3 = scaleSpectrum(getSampleMovingAvg(spectrumTex,vec2(ty,currentPositionEst - tx),4.0)).b; 
+		//s = (s3 - s2) * 4.;
+		
 		col += colscale(s) * plotPoint(t.x,s,0.02) * 0.3;
 	}
 
@@ -395,10 +428,19 @@ vec4 renderGraph_multi(vec2 t)
 	float da = getCurrentAudioDataSample(2.0);
 	//df = fscale(df);
 	//df *= df;
-	col.g += (1.0 - clamp(abs(df - ty) * 300.0,0.0,1.0))*da*da ;
+	col += vec3(1.0,1.0,0.9) * ((1.0 - clamp(abs(df - ty) * 300.0,0.0,1.0))*da*da * (1.0 - smoothstep(0.0,0.1,t.x))) ;
+
+	// multi-peak markers
+	col += vec3(1.0,1.0,0.05) * getMultiPeakFilterMarkerIntensity(0,vec2(t.x,ty));
+	col += vec3(1.0,0.8,0.05) * getMultiPeakFilterMarkerIntensity(1,vec2(t.x,ty));
+	col += vec3(1.0,0.6,0.05) * getMultiPeakFilterMarkerIntensity(2,vec2(t.x,ty));
+	col += vec3(1.0,0.4,0.05) * getMultiPeakFilterMarkerIntensity(3,vec2(t.x,ty));
+	col += vec3(1.0,0.2,0.05) * getMultiPeakFilterMarkerIntensity(4,vec2(t.x,ty));
+
 
 	return vec4(col,1.0);
 }
+
 
 
 vec4 renderGraph_minmax(vec2 t)
