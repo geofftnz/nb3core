@@ -92,7 +92,8 @@ namespace nb3.Vis
 
 
         public VisHost(Player.Player player)
-            : base(GameWindowSettings.Default,
+            : base(
+                  GameWindowSettings.Default,
                   new NativeWindowSettings
                   {
                       Size = new Vector2i(800, 600),
@@ -140,6 +141,7 @@ namespace nb3.Vis
 
             font.Loaded += (s, e) => { text.Font = font; };
 
+            //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
 
         private void Keyboard_KeyUp(KeyboardKeyEventArgs e)
@@ -258,7 +260,7 @@ namespace nb3.Vis
 
             components.Update(frameData);
 
-            Thread.Sleep(0);
+            Thread.Sleep(1);
         }
 
         private void SetProjection(Vector2i size)
