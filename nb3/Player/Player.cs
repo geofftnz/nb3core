@@ -55,7 +55,7 @@ namespace nb3.Player
 
         public void Open(string filename)
         {
-            /*
+            
             if (output != null)
             {
                 output.Stop();
@@ -64,15 +64,12 @@ namespace nb3.Player
                 {
                     Thread.Sleep(10);
                 }
-            }*/
+            }
 
+            reader?.Close();
+            output?.Dispose();
+            reader?.Dispose();
 
-
-            Dispose(true);
-
-            //pcmstream = WaveFormatConversionStream.CreatePcmStream(new Mp3FileReader(filename));
-            //reductionstream = new BlockAlignReductionStream(pcmstream);
-            //output.Init(new WaveChannel32(reductionstream));
             output = outputFactory();
             reader = new AudioFileReader2(filename);
             spectrum = new SpectrumGenerator(reader);
