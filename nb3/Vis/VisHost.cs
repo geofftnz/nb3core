@@ -33,6 +33,7 @@ namespace nb3.Vis
         private Font font;
         private TextManager text;
         private KeyboardActionManager keyboardActions;
+        private ComponentSwitcher switcher;
 
         private TextBlock title = new TextBlock("t0", "NeuralBeat3 ©2016-2020 Geoff Thornburrow", new Vector3(0.0f, 0.05f, 0f), 0.0005f, new Vector4(1f, 0.8f, 0.2f, 1f));
         private Matrix4 overlayProjection;
@@ -135,9 +136,11 @@ namespace nb3.Vis
             components.Add(keyboardActions = new KeyboardActionManager(), 1);
             components.Add(globalTextures);
             components.Add(frameCounter = new OpenTKExtensions.Components.FrameCounter(font));
+            components.Add(switcher = new ComponentSwitcher() { KeyForward = new KeySpec(Keys.Tab), KeyBackward = new KeySpec(Keys.Tab, KeyModifiers.Shift) });
+
             //components.Add(new Renderers.Components.DebugSpectrumWaterfall());
-            components.Add(new Renderers.AnalysisDebugRenderer(font, Player.FilterOutputNames));
-            //components.Add(new Renderers.BasicShaderRenderer());
+            switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player.FilterOutputNames));
+            switcher.Add(new Renderers.BasicShaderRenderer());
 
             font.Loaded += (s, e) => { text.Font = font; };
 
