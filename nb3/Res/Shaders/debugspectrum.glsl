@@ -225,6 +225,15 @@ uniform float currentPositionEst;
 #include ".|common";
 #include ".|spectrum_common";
 
+float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float freq)
+{
+	float df = getAudioDataSample(audioDataTex,5. + markerIndex * 2.,time);  // freq+level pairs starting at index 5
+	float da = min(1.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)*10.0);
+
+	return (1.0 - smoothstep(abs(freq - df),0.0,0.00075)) * da;
+}
+
+
 vec4 renderSpectrum(vec2 t)
 {
 	float original_tx = t.x;
@@ -266,6 +275,7 @@ vec4 renderSpectrum(vec2 t)
 	//float b = 1.0 - smoothstep(abs(currentPositionEst-t.y),0.0,0.5/1024.0);
 	//col += vec3(0.0,1.0,0.0) * b * 0.5;
 
+
 	// marker for dominant frequency detector
 	float df = getAudioDataSample(audioDataTex,0.0,t.y);
 	float da = getAudioDataSample(audioDataTex,2.0,t.y);
@@ -279,6 +289,13 @@ vec4 renderSpectrum(vec2 t)
 	//col.g += a*da*da * fade;
 	col.g += a*da*da*fade*3.;
 
+
+	// multi-peak markers
+	col += vec3(1.0,0.0,0.0) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
+	col += vec3(1.0,1.0,0.0) * getMultiPeakFilterMarkerIntensity(1,t.y,t.x);
+	col += vec3(0.0,1.0,0.0) * getMultiPeakFilterMarkerIntensity(2,t.y,t.x);
+	col += vec3(0.0,0.6,1.0) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
+	col += vec3(0.0,0.0,1.0) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
 
 
 	return vec4(col,1.0);
@@ -417,7 +434,9 @@ vec4 renderGraph_multi(vec2 t)
 		// peak extraction
 		//float s2 = scaleSpectrum(getSampleMovingAvg(spectrumTex,vec2(ty,currentPositionEst - tx),20.0)).b; 
 		//float s3 = scaleSpectrum(getSampleMovingAvg(spectrumTex,vec2(ty,currentPositionEst - tx),4.0)).b; 
-		//s = (s3 - s2) * 4.;
+		//s = (s3 - s2) * 8.0;
+		//s *= smoothstep(0.3,0.5,s3);
+
 		
 		col += colscale(s) * plotPoint(t.x,s,0.02) * 0.3;
 	}
