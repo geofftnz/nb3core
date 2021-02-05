@@ -34,7 +34,8 @@ namespace nb3.Player.Analysis
 
             // The order of these is important as they define where filter outputs end up in the analysis data texture.
             AddFilter(new PeakFrequencyFilter("PFF", 12, Globals.SPECTRUMRES / 3 - 12));
-            AddFilter(new MultiPeakFrequencyFilter("MPFF", 12, Globals.SPECTRUMRES / 3 - 12));
+            //AddFilter(new MultiPeakFrequencyFilter("MPFF", 12, Globals.SPECTRUMRES / 3 - 12));
+            AddFilter(new MultiPeakFrequencyFilter("MPFF", 1, Globals.SPECTRUMRES - 2));
             AddFilter(new KickDrumFilter3("KD3", 0, 6));
             AddFilter(new KickDrumFilter2("KD2A", 0, 4));
             AddFilter(new KickDrumFilter2("KD2B", 0, 8));

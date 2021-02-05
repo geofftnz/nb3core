@@ -85,6 +85,11 @@ namespace nb3.Player.Analysis.Filter
         /// </summary>
         public float PeakTrackingExtinctionThreshold { get; set; } = 0.05f;
 
+        /// <summary>
+        /// How much stronger an unallocated detected peak needs to be to replace a tracked peak.
+        /// </summary>
+        public float PeakReplacementLevelThreshold { get; set; } = 0.1f;
+
 
         private float[] NoiseFloor = new float[Globals.SPECTRUMRES];
         private float[] SmoothSpectrum = new float[Globals.SPECTRUMRES];
@@ -165,7 +170,7 @@ namespace nb3.Player.Analysis.Filter
                     yield return new DetectedPeak
                     {
                         Frequency = (float)i / (float)Globals.SPECTRUMRES,
-                        Level = s[i] * (1f - AbsoluteLevelBias) + AbsoluteLevelBias * original[i], 
+                        Level = s[i] * (1f - AbsoluteLevelBias) + AbsoluteLevelBias * original[i],
                         IsAllocated = false
                     };
                 }
@@ -229,6 +234,8 @@ namespace nb3.Player.Analysis.Filter
                     if (trackedPeak.Level < PeakTrackingExtinctionThreshold)
                     {
                         trackedPeak.IsActive = false;
+                        trackedPeak.Level = 0f;
+                        trackedPeak.Frequency = 0f;
                     }
                 }
             }
@@ -251,6 +258,21 @@ namespace nb3.Player.Analysis.Filter
                     matchingPeak.IsAllocated = true;
                 }
             }
+
+            // Are any of the remaining peaks stronger than the weakest tracked peaks?
+            foreach (var peak in peaks.Where(p => !p.IsAllocated).OrderByDescending(p => p.Level))
+            {
+                var weakestTrackedPeak = trackedPeaks.OrderBy(tp => tp.Level).FirstOrDefault();
+
+                if (peak.Level > weakestTrackedPeak.Level * (1f + PeakReplacementLevelThreshold)) 
+                {
+                    weakestTrackedPeak.IsActive = true;
+                    weakestTrackedPeak.Frequency = peak.Frequency;
+                    weakestTrackedPeak.Level = peak.Level;
+                    peak.IsAllocated = true;
+                }
+            }
+
 
             // output peaks as Frequency,Level pairs
             int outputIndex = 0;

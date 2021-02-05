@@ -230,7 +230,28 @@ float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float fre
 	float df = getAudioDataSample(audioDataTex,5. + markerIndex * 2.,time);  // freq+level pairs starting at index 5
 	float da = min(1.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)*10.0);
 
-	return (1.0 - smoothstep(abs(freq - df),0.0,0.00075)) * da;
+	return (1.0 - smoothstep(abs(freq - df),0.0,0.00075)) * da ;
+}
+
+vec3 getFreqColour(float f)
+{
+	// bass purple - blue
+	if (f < 0.02) return mix(vec3(0.2,0.0,1.0),vec3(0.0,0.0,1.0),f / 0.02);
+
+	// red
+	if (f < 0.05) return mix(vec3(0.0,0.0,1.0),vec3(1.0,0.0,0.0),(f-0.02) / 0.03);
+
+	// yellow
+	if (f < 0.07) return mix(vec3(1.0,0.0,0.0),vec3(1.0,1.0,0.0),(f-0.05) / 0.02);
+
+	// green
+	if (f < 0.1) return mix(vec3(1.0,1.0,0.0),vec3(0.0,1.0,0.0),(f-0.07) / 0.03);
+
+	// skyblue
+	if (f < 0.2) return mix(vec3(0.0,1.0,0.0),vec3(0.0,0.5,1.0),(f-0.1) / 0.1);
+
+	// remainder
+	return mix(vec3(0.0,0.5,1.0),vec3(1.0,1.0,1.0),(f-0.2) / 0.8);
 }
 
 
@@ -287,18 +308,24 @@ vec4 renderSpectrum(vec2 t)
 	float a = 1.0 - smoothstep(abs(t.x - df),0.0,0.001);  
 	//col.r += a * fade;
 	//col.g += a*da*da * fade;
-	col.g += a*da*da*fade*3.;
+	col.g += a*da*da*3.;
 
+	col *= 0.1;
 
 	// multi-peak markers
-	col += vec3(1.0,0.0,0.0) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
-	col += vec3(1.0,1.0,0.0) * getMultiPeakFilterMarkerIntensity(1,t.y,t.x);
-	col += vec3(0.0,1.0,0.0) * getMultiPeakFilterMarkerIntensity(2,t.y,t.x);
-	col += vec3(0.0,0.6,1.0) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
-	col += vec3(0.0,0.0,1.0) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
+	//col += vec3(1.0,0.0,0.0) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
+	//col += vec3(1.0,1.0,0.0) * getMultiPeakFilterMarkerIntensity(1,t.y,t.x);
+	//col += vec3(0.0,1.0,0.0) * getMultiPeakFilterMarkerIntensity(2,t.y,t.x);
+	//col += vec3(0.0,0.6,1.0) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
+	//col += vec3(0.0,0.0,1.0) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
 
+	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
+	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(1,t.y,t.x);
+	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(2,t.y,t.x);
+	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
+	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
 
-	return vec4(col,1.0);
+	return vec4(col * fade,1.0);
 }
 
 

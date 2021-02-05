@@ -66,8 +66,9 @@ namespace nb3.Player
                 }
             }
 
-            reader?.Close();
             output?.Dispose();
+
+            reader?.Close();
             reader?.Dispose();
 
             output = outputFactory();
