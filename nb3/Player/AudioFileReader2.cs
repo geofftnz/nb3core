@@ -114,7 +114,9 @@ namespace nb3.Player
         }
 
         /// <summary>
-        /// Reads from this wave stream
+        /// Reads from this wave stream.
+        /// 
+        /// Not used, but required to implement
         /// </summary>
         /// <param name="buffer">Audio buffer</param>
         /// <param name="offset">Offset into buffer</param>
@@ -122,10 +124,11 @@ namespace nb3.Player
         /// <returns>Number of bytes read</returns>
         public override int Read(byte[] buffer, int offset, int count)
         {
-            var waveBuffer = new WaveBuffer(buffer);
-            int samplesRequired = count / 4;
-            int samplesRead = Read(waveBuffer.FloatBuffer, offset / 4, samplesRequired);
-            return samplesRead * 4;
+            //var waveBuffer = new WaveBuffer(buffer);
+            //int samplesRequired = count / 4;
+            //int samplesRead = Read(waveBuffer.FloatBuffer, offset / 4, samplesRequired);
+            //return samplesRead * 4;
+            throw new Exception("Should not be calling this Read() with a byte[] buffer.");
         }
 
         /// <summary>
