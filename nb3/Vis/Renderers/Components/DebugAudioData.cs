@@ -97,8 +97,8 @@ namespace nb3.Vis.Renderers.Components
             frameData = renderData as FrameData;
             base.Render(renderData);
 
-            textManager.Modelview = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f) * ViewMatrix;
-            textManager.Projection = ProjectionMatrix;
+            //textManager.Modelview = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f) * ViewMatrix;
+            //textManager.Projection = ProjectionMatrix;
             textManager.Refresh();
 
             //components.Do<ITransformable>(c => { c.ViewMatrix = ViewMatrix; c.ProjectionMatrix = ProjectionMatrix; }); // TODO: temp hack until operatorcomponentbase is derived from compositecomponent

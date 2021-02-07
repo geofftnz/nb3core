@@ -90,6 +90,12 @@ namespace nb3.Player.Analysis.Filter
         /// </summary>
         public float PeakReplacementLevelThreshold { get; set; } = 0.1f;
 
+        public IEnumerable<FilterParameter> Parameters()
+        {
+            yield return new FilterParameter { Name = nameof(PeakSelectionThreshold), GetValue = () => PeakSelectionThreshold, SetValue = (x) => PeakSelectionThreshold = x, Delta = 0.005f };
+            yield return new FilterParameter { Name = nameof(HighFreqFallOff), GetValue = () => HighFreqFallOff, SetValue = (x) => HighFreqFallOff = x, Delta = 0.005f };
+        }
+
 
         private float[] NoiseFloor = new float[Globals.SPECTRUMRES];
         private float[] SmoothSpectrum = new float[Globals.SPECTRUMRES];
@@ -264,7 +270,7 @@ namespace nb3.Player.Analysis.Filter
             {
                 var weakestTrackedPeak = trackedPeaks.OrderBy(tp => tp.Level).FirstOrDefault();
 
-                if (peak.Level > weakestTrackedPeak.Level * (1f + PeakReplacementLevelThreshold)) 
+                if (peak.Level > weakestTrackedPeak.Level * (1f + PeakReplacementLevelThreshold))
                 {
                     weakestTrackedPeak.IsActive = true;
                     weakestTrackedPeak.Frequency = peak.Frequency;
@@ -315,5 +321,8 @@ namespace nb3.Player.Analysis.Filter
         public void Reset()
         {
         }
+
+
+
     }
 }

@@ -13,5 +13,14 @@ namespace nb3.Player.Analysis.Filter
         float[] GetValues(FilterParameters frame);
         void Reset();
         string GetOutputName(int slot);
+
+        /// <summary>
+        /// Enumerates the parameters for this filter, to allow runtime adjustment.
+        /// </summary>
+        /// <returns></returns>
+        virtual IEnumerable<FilterParameter> Parameters()
+        {
+            yield break;
+        } 
     }
 }

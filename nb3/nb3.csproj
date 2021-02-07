@@ -52,7 +52,7 @@
     <PackageReference Include="NAudio" Version="1.10.0" />
     <PackageReference Include="NAudio.Flac.Port" Version="1.0.0" />
     <PackageReference Include="NAudio.Vorbis" Version="1.2.0" />
-    <PackageReference Include="OpenTK4Extensions" Version="1.0.8" />
+    <PackageReference Include="OpenTK4Extensions" Version="1.0.9" />
   </ItemGroup>
 
   <ItemGroup>

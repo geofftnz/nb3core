@@ -132,7 +132,7 @@ namespace nb3.Vis
             // create components
             //components.Add(font = new Font(@"res\font\calibrib.ttf_sdf.2048.png", @"res\font\calibrib.ttf_sdf.2048.txt"), 1);
             components.Add(font = new Font(@"res\font\lucon.ttf_sdf.1024.png", @"res\font\lucon.ttf_sdf.1024.txt"), 1);
-            components.Add(text = new TextManager(), 2);
+            components.Add(text = new TextManager("texmgr",font), 2);
             components.Add(keyboardActions = new KeyboardActionManager(), 1);
             components.Add(globalTextures);
             components.Add(frameCounter = new OpenTKExtensions.Components.FrameCounter(font));
@@ -141,8 +141,6 @@ namespace nb3.Vis
             //components.Add(new Renderers.Components.DebugSpectrumWaterfall());
             switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player.FilterOutputNames));
             switcher.Add(new Renderers.BasicShaderRenderer());
-
-            font.Loaded += (s, e) => { text.Font = font; };
 
             //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
@@ -279,8 +277,8 @@ namespace nb3.Vis
             overlayProjection = Matrix4.CreateOrthographicOffCenter(0.0f, aspect, 1.0f, 0.0f, 0.0f, 10.0f);
             overlayModelview = Matrix4.Identity;// * Matrix4.CreateTranslation(0.0f, 0.0f, -1.0f);
 
-            text.Projection = overlayProjection;
-            text.Modelview = overlayModelview;
+            //text.Projection = overlayProjection;
+            //text.Modelview = overlayModelview;
         }
 
         public void AddSample(AudioAnalysisSample sample)
