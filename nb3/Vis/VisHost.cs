@@ -132,14 +132,14 @@ namespace nb3.Vis
             // create components
             //components.Add(font = new Font(@"res\font\calibrib.ttf_sdf.2048.png", @"res\font\calibrib.ttf_sdf.2048.txt"), 1);
             components.Add(font = new Font(@"res\font\lucon.ttf_sdf.1024.png", @"res\font\lucon.ttf_sdf.1024.txt"), 1);
-            components.Add(text = new TextManager("texmgr",font), 2);
-            components.Add(keyboardActions = new KeyboardActionManager(), 1);
+            components.Add(text = new TextManager("texmgr", font), 2);
+            components.Add(keyboardActions = new KeyboardActionManager() { KeyboardPriority = int.MaxValue }, 1);
             components.Add(globalTextures);
             components.Add(frameCounter = new OpenTKExtensions.Components.FrameCounter(font));
             components.Add(switcher = new ComponentSwitcher() { KeyForward = new KeySpec(Keys.Tab), KeyBackward = new KeySpec(Keys.Tab, KeyModifiers.Shift) });
 
             //components.Add(new Renderers.Components.DebugSpectrumWaterfall());
-            switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player.FilterOutputNames));
+            switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player));
             switcher.Add(new Renderers.BasicShaderRenderer());
 
             //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;

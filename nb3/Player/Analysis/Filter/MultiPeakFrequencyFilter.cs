@@ -92,8 +92,15 @@ namespace nb3.Player.Analysis.Filter
 
         public IEnumerable<FilterParameter> Parameters()
         {
-            yield return new FilterParameter { Name = nameof(PeakSelectionThreshold), GetValue = () => PeakSelectionThreshold, SetValue = (x) => PeakSelectionThreshold = x, Delta = 0.005f };
-            yield return new FilterParameter { Name = nameof(HighFreqFallOff), GetValue = () => HighFreqFallOff, SetValue = (x) => HighFreqFallOff = x, Delta = 0.005f };
+            yield return new FilterParameter { Name = nameof(PeakSelectionThreshold), GetValue = () => PeakSelectionThreshold, SetValue = (x) => PeakSelectionThreshold = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(HighFreqFallOff), GetValue = () => HighFreqFallOff, SetValue = (x) => HighFreqFallOff = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(TemporalSmoothing), GetValue = () => TemporalSmoothing, SetValue = (x) => TemporalSmoothing = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(AbsoluteLevelBias), GetValue = () => AbsoluteLevelBias, SetValue = (x) => AbsoluteLevelBias = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(PeakTrackingFrequencyThreshold), GetValue = () => PeakTrackingFrequencyThreshold, SetValue = (x) => PeakTrackingFrequencyThreshold = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(PeakTrackingLevelThreshold), GetValue = () => PeakTrackingLevelThreshold, SetValue = (x) => PeakTrackingLevelThreshold = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(PeakTrackingUnmatchedDecay), GetValue = () => PeakTrackingUnmatchedDecay, SetValue = (x) => PeakTrackingUnmatchedDecay = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(PeakTrackingExtinctionThreshold), GetValue = () => PeakTrackingExtinctionThreshold, SetValue = (x) => PeakTrackingExtinctionThreshold = x, Delta = 0.01f };
+            yield return new FilterParameter { Name = nameof(PeakReplacementLevelThreshold), GetValue = () => PeakReplacementLevelThreshold, SetValue = (x) => PeakReplacementLevelThreshold = x, Delta = 0.01f };
         }
 
 

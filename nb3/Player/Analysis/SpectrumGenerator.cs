@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using nb3.Common;
 using nb3.Player.Analysis;
+using nb3.Player.Analysis.Filter;
 using nb3.Player.Analysis.LoudnessWeighting;
 using nb3.Vis;
 using System;
@@ -50,6 +51,7 @@ namespace nb3.Player.Analysis
 
         // hacky exposing of filter output name list
         public List<string> FilterOutputNames => analyser.OutputNames;
+        public List<Tuple<string, FilterParameter>> FilterParameters => analyser.GetFilterParameters().ToList();
 
         public event EventHandler<FftEventArgs> SpectrumReady;
         public WaveFormat WaveFormat => source.WaveFormat;

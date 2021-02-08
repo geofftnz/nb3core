@@ -105,5 +105,10 @@ namespace nb3.Player.Analysis
             maxFilterOutputIndex += filter.OutputSlotCount;
             Filters.Add(filter);
         }
+
+        public IEnumerable<Tuple<string,FilterParameter>> GetFilterParameters()
+        {
+            return Filters.SelectMany(f => f.Parameters().Select(p => new Tuple<string, FilterParameter>(f.Name, p)));
+        }
     }
 }

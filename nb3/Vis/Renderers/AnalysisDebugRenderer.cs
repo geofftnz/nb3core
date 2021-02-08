@@ -15,6 +15,7 @@ using NLog.Filters;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using OpenTK.Windowing.Common;
+using nb3.Vis.UI;
 
 namespace nb3.Vis.Renderers
 {
@@ -32,6 +33,7 @@ namespace nb3.Vis.Renderers
         private Matrix4 spectrumModel = Matrix4.Identity;
         private Matrix4 audioDataModel = Matrix4.Identity;
 
+        private ParameterEditor parameterEditor;
         private KeyboardActionManager keyboardActions;
 
         private float ypos = 0.0f;
@@ -46,7 +48,7 @@ namespace nb3.Vis.Renderers
             return Matrix4.CreateScale(0.5f, 0.5f, 1.0f) * Matrix4.CreateTranslation(0.5f, 0.5f, 0.0f) * Matrix4.CreateScale(1f, size, 1f);
         }
 
-        public AnalysisDebugRenderer(Font font, List<string> filterOutputNames)
+        public AnalysisDebugRenderer(Font font, Player.Player player)
         {
             projection = Matrix4.CreateOrthographicOffCenter(0f, 1f, 1f, 0f, 0.0f, 10f);  // 0,0 in top left
 
@@ -65,12 +67,23 @@ namespace nb3.Vis.Renderers
             components.Add(waterfall = new DebugSpectrumWaterfall() { DrawOrder = drawOrder++, ModelMatrix = waterfallModel, ProjectionMatrix = projection });
             components.Add(spectrum = new DebugSpectrum() { DrawOrder = drawOrder++, ModelMatrix = spectrumModel, ProjectionMatrix = projection });
             components.Add(waterfall2 = new DebugSpectrum2() { DrawOrder = drawOrder++, ModelMatrix = waterfall2Model, ProjectionMatrix = projection });
-            components.Add(datagraphs = new DebugAudioData(font, filterOutputNames) { DrawOrder = drawOrder++, ModelMatrix = audioDataModel, ProjectionMatrix = projection });
-            components.Add(keyboardActions = new KeyboardActionManager(), 1);
+            components.Add(datagraphs = new DebugAudioData(font, player.FilterOutputNames) { DrawOrder = drawOrder++, ModelMatrix = audioDataModel, ProjectionMatrix = projection });
+            components.Add(keyboardActions = new KeyboardActionManager() { KeyboardPriority = 100 }, 1);
+
+            components.Add(parameterEditor = new ParameterEditor(font) { DrawOrder = drawOrder++ });
 
             keyboardActions.Add(Keys.Up, 0, () => { ypostarget += yshift; });
             keyboardActions.Add(Keys.Down, 0, () => { ypostarget -= yshift; });
-            
+
+            //parameterEditor.AddParameter("p1", () => 123.4567f, (f) => { });
+            //parameterEditor.AddParameter("p2", () => 0.007f, (f) => { });
+
+            // copy parameters over
+            foreach (var p in player.FilterParameters)
+            {
+                parameterEditor.AddParameter($"{p.Item1}_{p.Item2.Name}", p.Item2.GetValue, p.Item2.SetValue, p.Item2.Delta);
+            }
+
         }
 
         public override bool ProcessKeyDown(KeyboardKeyEventArgs e)
