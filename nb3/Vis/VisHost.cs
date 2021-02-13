@@ -141,6 +141,7 @@ namespace nb3.Vis
             //components.Add(new Renderers.Components.DebugSpectrumWaterfall());
             switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player));
             switcher.Add(new Renderers.BasicShaderRenderer());
+            switcher.Add(new Renderers.ParticleRenderer());
 
             //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
@@ -207,6 +208,10 @@ namespace nb3.Vis
 
         private void VisHost_RenderFrame(FrameEventArgs e)
         {
+            double time = timer.Elapsed.TotalSeconds;
+            frameData.DeltaRenderTime = time - frameData.RenderTime;
+            frameData.RenderTime = time;
+
             if (shaderUpdatePoller.HasChanges)
             {
                 components.Reload();
@@ -215,7 +220,7 @@ namespace nb3.Vis
 
             //text.AddOrUpdate(title);
 
-            GL.ClearColor(0.0f, 0.1f, 0.4f, 1.0f);
+            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             GL.ClearDepth(1.0);
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
@@ -235,7 +240,9 @@ namespace nb3.Vis
 
         private void VisHost_UpdateFrame(FrameEventArgs e)
         {
-            frameData.Time = timer.Elapsed.TotalSeconds;
+            double time = timer.Elapsed.TotalSeconds;
+            frameData.DeltaTime = time - frameData.Time;
+            frameData.Time = time;
 
             // poll for shader changes
             // TODO: make poll time a parameter

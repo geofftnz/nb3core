@@ -52,11 +52,23 @@
     <PackageReference Include="NAudio" Version="1.10.0" />
     <PackageReference Include="NAudio.Flac.Port" Version="1.0.0" />
     <PackageReference Include="NAudio.Vorbis" Version="1.2.0" />
-    <PackageReference Include="OpenTK4Extensions" Version="1.0.15" />
+    <PackageReference Include="OpenTK4Extensions" Version="1.0.18" />
   </ItemGroup>
 
   <ItemGroup>
     <None Update="nlog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Res\Shaders\Particles\operator.frag.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Res\Shaders\Particles\operator.vert.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Res\Shaders\Particles\particles_col.frag.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Res\Shaders\Particles\particles_col.vert.glsl">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

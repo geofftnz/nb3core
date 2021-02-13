@@ -40,7 +40,6 @@ namespace nb3.Vis.Renderers
         private float ypostarget = 0.0f;
         private const float yshift = 0.05f;
 
-
         private Matrix4 GetLayout(float size, ref float offset)
         {
             // model vertices are -1 -> 1 (zero-centered), so we need to bring them into the 0-1 range. (0.5-centered)
@@ -113,8 +112,11 @@ namespace nb3.Vis.Renderers
                 c.ViewMatrix = Matrix4.CreateTranslation(0f, y, 0f);
                 y += c.ModelMatrix.Row1.Y * 2.0f; // offset by y scale, undoing half-scaling from model
             }
+        }
 
-
+        public override void Render(IFrameRenderData frameData)
+        {
+            base.Render(frameData);
         }
 
     }
