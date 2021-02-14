@@ -103,7 +103,6 @@ namespace nb3.Player.Analysis.Filter
             yield return new FilterParameter { Name = nameof(PeakReplacementLevelThreshold), GetValue = () => PeakReplacementLevelThreshold, SetValue = (x) => PeakReplacementLevelThreshold = x, Delta = 0.01f };
         }
 
-
         private float[] NoiseFloor = new float[Globals.SPECTRUMRES];
         private float[] SmoothSpectrum = new float[Globals.SPECTRUMRES];
         private float[] DiffSpectrum = new float[Globals.SPECTRUMRES];

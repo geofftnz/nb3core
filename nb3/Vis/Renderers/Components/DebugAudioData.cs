@@ -69,7 +69,7 @@ namespace nb3.Vis.Renderers.Components
                 filterOutputNames.AddRange(outputNames);
             }
 
-            components.Add(textManager = new TextManager("tm", font));
+            components.Add(textManager = new TextManager("tm", font) { DrawOrder = 2});
         }
 
         private void DebugAudioData_Unloading(object sender, EventArgs e)
@@ -86,7 +86,7 @@ namespace nb3.Vis.Renderers.Components
             
             foreach(var s in filterOutputNames)
             {
-                var tb = new TextBlock($"F{i:000}", $"{i:000} {s}", new Vector3(0.0f, 0.0f + (i+.5f) * rowsize, 0.0f), .07f / 1024f, new Vector4(1f, 1f, 1f, .2f));
+                var tb = new TextBlock($"F{i:000}", $"{i:000} {s}", new Vector3(0.0f, 0.0f + (i+.5f) * rowsize, 0.0f), 0.07f / 1024f, new Vector4(1f, 1f, 1f, .2f));
                 textManager.AddOrUpdate(tb);
                 i++;
             }
@@ -97,8 +97,9 @@ namespace nb3.Vis.Renderers.Components
             frameData = renderData as FrameData;
             base.Render(renderData);
 
-            //textManager.Modelview = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f) * ViewMatrix;
-            //textManager.Projection = ProjectionMatrix;
+            textManager.ModelMatrix = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f);
+            textManager.ViewMatrix = ViewMatrix;
+            textManager.ProjectionMatrix = ProjectionMatrix;
             textManager.Refresh();
 
             //components.Do<ITransformable>(c => { c.ViewMatrix = ViewMatrix; c.ProjectionMatrix = ProjectionMatrix; }); // TODO: temp hack until operatorcomponentbase is derived from compositecomponent

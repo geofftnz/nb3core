@@ -14,6 +14,8 @@ uniform sampler2D particleColTex;
 uniform float currentPosition;
 uniform float currentPositionEst;
 
+#include "Common/filterParameters.glsl"
+
 // math ------------------------------------------------------------------------------
 #define PI 3.1415926535897932384626433832795
 #define PIOVER2 1.5707963267948966192313216916398
@@ -36,6 +38,11 @@ float todB(float s)
 	s = 20.0*log(s);
 	s = max(0.0,1.0 + ((s+20.0) / 200.0));
 	return s;
+}
+
+float smoothpulse(float a, float low1, float high1, float high2, float low2)
+{
+	return smoothstep(low1,high1,a) * (1.0 - smoothstep(high2,low2,a));
 }
 
 // spectrum & audio data -------------------------------------------------------------
@@ -93,6 +100,27 @@ vec3 getFreqColour(float f)
 	// remainder
 	return mix(vec3(0.0,0.5,1.0),vec3(1.0,1.0,1.0),(f-0.2) / 0.8);
 }
+
+vec3 colscale(float s)
+{
+	vec3 col  = vec3(0.0,0.0,0.0   );
+
+	vec3 col0 = vec3(0.0,0.0,0.05   );
+	vec3 col1 = vec3(0.0,0.1,0.9 );
+	vec3 col2 = vec3(0.0,0.6,0.6   );
+	vec3 col3 = vec3(0.9,0.9,0.0  );
+	vec3 col4 = vec3(0.9,0.0,0.0  );
+	vec3 col5 = vec3(1.0,1.0,1.0);
+	
+	col = mix(col0,col1,clamp(s*2.5,0.0,1.0));
+	col = mix(col,col2,clamp((s-0.3)*2.0,0.0,1.0));
+	col = mix(col,col3,clamp((s-0.5)*4.0,0.0,1.0));
+	col = mix(col,col4,clamp((s-0.6)*5.0,0.0,1.0));
+	col = mix(col,col5,clamp((s-0.8)*6.0,0.0,1.0));
+
+	return col;
+}
+
 
 
 
@@ -168,9 +196,66 @@ PosCol blob1(vec2 coord)
 	return PosCol(vec4(p,s),col);
 }
 
+PosCol plane1(vec2 coord)
+{
+	vec3 p;
+	float s = 1.5;
+	vec4 col = vec4(0.4,0.4,0.4,0.5);
+
+	//coord.y += fract(currentPositionEst*1024.0);
+
+	float fcoord = abs(coord.x-0.5)*2.0+0.01;
+	float freq = fscale(fcoord);
+	vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst - coord.y * 0.2)));
+
+	p.xz = (coord - vec2(0.5)) * 2.0;
+	p.z += 0.13;  // front-back shift
+	p.y -= 0.17;   // eye height
+
+	p.y += ((coord.x<0)?samp.r:samp.g) * 0.2;
+
+	col.rgb = colscale((coord.x<0)?samp.r:samp.g);
+	col.a = 1.0 / (1.0 + (p.z+1.0)*4.0);
+
+	// mix in various effects
+
+	float pulsePos = currentPositionEst - coord.y * 0.02;
+	// bass pulse
+	col.rgb += vec3(1.0) * (1.0-smoothstep(0.1,0.2,fcoord)) * pow(getAudioDataSample(audioDataTex,A_BD_edge,pulsePos),4.0 );
+
+	// snare
+	col.rgb += vec3(1.0) * (smoothpulse(fcoord,0.1,0.2,0.4,0.5)) * pow(getAudioDataSample(audioDataTex,A_SN_level,pulsePos),4.0 );
+
+	// hihats
+	col.rgb += vec3(1.0) * (smoothpulse(fcoord,0.4,0.5,0.9,1.0)) * pow(getAudioDataSample(audioDataTex,A_HH1_edge,pulsePos),4.0 );
+
+
+	return PosCol(vec4(p,s),col);
+}
+
+
 void main(void)
 {
-	PosCol a = blob1(texcoord);
+	PosCol b = blob1(texcoord);
+	PosCol a;
+
+	a = plane1(texcoord);
+
+	float m = sin((texcoord.y+sin(time * 0.7)) * (texcoord.x * 3.3 + sin(time * 1.3))) * 0.5 + 0.5;
+	a.pos = mix(a.pos,b.pos,m);
+	a.col = mix(a.col,b.col,m);
+
+	//if (texcoord.y<0.5){
+	//	a = plane1(texcoord * vec2(1.0,2.0));
+	//}
+	//else{
+	//	//a = blob1((texcoord - vec2(0.0,0.5)) * vec2(1.0,2.0));
+	//}
+
 	out_Pos = a.pos;
 	out_Col = a.col;
 }
+
+
+
+

@@ -9,6 +9,7 @@ using NAudio.Wave.SampleProviders;
 using System.Threading;
 using nb3.Player.Analysis;
 using nb3.Player.Analysis.Filter;
+using System.IO;
 
 namespace nb3.Player
 {
@@ -46,7 +47,7 @@ namespace nb3.Player
 
         private object lockObj = new object();
 
-
+        private bool paramsWritten = false;
 
 
         public Player(Func<IWavePlayer> outputFactory)
@@ -68,6 +69,12 @@ namespace nb3.Player
                 }
             }
 
+            if (spectrum != null)
+            {
+                spectrum.SpectrumReady -= Spectrum_SpectrumReady;
+                spectrum = null;
+            }
+
             output?.Dispose();
 
             reader?.Close();
@@ -80,6 +87,14 @@ namespace nb3.Player
             output.Init(spectrum);
             TracksPlayed++;
             InvokePlayerStart(filename);
+
+            // write out filter parameter names to our shader directory so that shaders can reference things by name instead of index.
+            if (!paramsWritten)
+            {
+                int i = 0;
+                File.WriteAllLines("Res/Shaders/Common/filterParameters.glsl", spectrum.FilterOutputNames.Select(s => $"#define A_{s} {i++}"));
+                paramsWritten = true;
+            }
         }
 
         public WaveFormat WaveFormat { get { return reader?.WaveFormat; } }
