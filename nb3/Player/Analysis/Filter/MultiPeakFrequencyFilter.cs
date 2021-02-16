@@ -38,6 +38,8 @@ namespace nb3.Player.Analysis.Filter
             public bool IsActive { get; set; }
             public float Frequency { get; set; }
             public float Level { get; set; }
+
+            public float OutputLevel { get; set; }
         }
 
         private TrackedPeak[] trackedPeaks = new TrackedPeak[NUMPEAKS];
@@ -170,6 +172,7 @@ namespace nb3.Player.Analysis.Filter
         {
             public float Frequency { get; set; }
             public float Level { get; set; }
+            public float LevelAboveFloor { get; set; }
             public bool IsAllocated { get; set; }
         }
 
@@ -183,6 +186,7 @@ namespace nb3.Player.Analysis.Filter
                     {
                         Frequency = (float)i / (float)Globals.SPECTRUMRES,
                         Level = s[i] * (1f - AbsoluteLevelBias) + AbsoluteLevelBias * original[i],
+                        LevelAboveFloor = s[i],
                         IsAllocated = false
                     };
                 }
@@ -235,18 +239,23 @@ namespace nb3.Player.Analysis.Filter
                 {
                     trackedPeak.Frequency = matchingPeak.Frequency;
                     trackedPeak.Level = trackedPeak.Level * 0.5f + 0.5f * matchingPeak.Level;  // blend level
+                    trackedPeak.OutputLevel = matchingPeak.LevelAboveFloor;
                     matchingPeak.IsAllocated = true;
                 }
                 else  // nothing matching
                 {
                     // decay level
                     trackedPeak.Level *= PeakTrackingUnmatchedDecay;
+                    // update output level
+                    trackedPeak.OutputLevel = DiffSpectrum[Math.Clamp((int)(trackedPeak.Frequency * Globals.SPECTRUMRES), 0, Globals.SPECTRUMRES - 1)];
+
 
                     // deactivate if extinct
                     if (trackedPeak.Level < PeakTrackingExtinctionThreshold)
                     {
                         trackedPeak.IsActive = false;
                         trackedPeak.Level = 0f;
+                        trackedPeak.OutputLevel = 0f;
                         trackedPeak.Frequency = 0f;
                     }
                 }
@@ -267,6 +276,7 @@ namespace nb3.Player.Analysis.Filter
                     trackedPeak.IsActive = true;
                     trackedPeak.Frequency = matchingPeak.Frequency;
                     trackedPeak.Level = matchingPeak.Level;
+                    trackedPeak.OutputLevel = matchingPeak.LevelAboveFloor;
                     matchingPeak.IsAllocated = true;
                 }
             }
@@ -281,6 +291,7 @@ namespace nb3.Player.Analysis.Filter
                     weakestTrackedPeak.IsActive = true;
                     weakestTrackedPeak.Frequency = peak.Frequency;
                     weakestTrackedPeak.Level = peak.Level;
+                    weakestTrackedPeak.OutputLevel = peak.LevelAboveFloor;
                     peak.IsAllocated = true;
                 }
             }
@@ -291,7 +302,7 @@ namespace nb3.Player.Analysis.Filter
             foreach (var trackedPeak in trackedPeaks)
             {
                 output[outputIndex++] = trackedPeak.IsActive ? trackedPeak.Frequency : 0f;
-                output[outputIndex++] = trackedPeak.IsActive ? trackedPeak.Level : 0f;
+                output[outputIndex++] = trackedPeak.IsActive ? trackedPeak.OutputLevel : 0f;
             }
 
             /*

@@ -14,9 +14,11 @@ void main(void)
 	vec4 col2 = col; //vec4(1.0,0.2,0.1,1.0);
 
 	// circle pattern in alpha
-	float a = max(0.0,(1.0 - rsq));
+	float a = max(0.0,(1.0 - rsq));  // 1.0 in centre, 0.0 on edge, quadratic falloff
 	//a*=a;
-	a = step(0.06,a);
+	//a = step(0.06,a);
+	//a = smoothstep(0.95,1.0,a);
+	//a = 1.0;
 	
 	// size < 0 alpha falloff
 	a *= min(1.0,size*size);

@@ -205,12 +205,14 @@ PosCol plane1(vec2 coord)
 	//coord.y += fract(currentPositionEst*1024.0);
 
 	float fcoord = abs(coord.x-0.5)*2.0+0.01;
+	//coord.y = 1.0-coord.y;
+
 	float freq = fscale(fcoord);
-	vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst - coord.y * 0.2)));
+	vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst - (0.2 - coord.y * 0.2))));
 
 	p.xz = (coord - vec2(0.5)) * 2.0;
 	p.z += 0.13;  // front-back shift
-	p.y -= 0.17;   // eye height
+	p.y -= 0.27;   // eye height
 
 	p.y += ((coord.x<0)?samp.r:samp.g) * 0.2;
 
@@ -219,16 +221,61 @@ PosCol plane1(vec2 coord)
 
 	// mix in various effects
 
-	float pulsePos = currentPositionEst - coord.y * 0.02;
+	float pulsePos = currentPositionEst - (0.01 - coord.y * 0.01);
 	// bass pulse
-	col.rgb += vec3(1.0) * (1.0-smoothstep(0.1,0.2,fcoord)) * pow(getAudioDataSample(audioDataTex,A_BD_edge,pulsePos),4.0 );
+	col.rgb += vec3(1.0,0.2,0.1) * (1.0-smoothstep(0.1,0.2,fcoord)) * pow(getAudioDataSample(audioDataTex,A_BD_level,pulsePos),4.0 );
 
 	// snare
-	col.rgb += vec3(1.0) * (smoothpulse(fcoord,0.1,0.2,0.4,0.5)) * pow(getAudioDataSample(audioDataTex,A_SN_level,pulsePos),4.0 );
+	col.rgb += vec3(0.4,1.0,0.1) * 0.5 * (smoothpulse(fcoord,0.1,0.2,0.4,0.5)) * pow(getAudioDataSample(audioDataTex,A_SN_level,pulsePos),4.0 );
 
 	// hihats
-	col.rgb += vec3(1.0) * (smoothpulse(fcoord,0.4,0.5,0.9,1.0)) * pow(getAudioDataSample(audioDataTex,A_HH1_edge,pulsePos),4.0 );
+	col.rgb += vec3(0.4,0.8,1.0) * 0.5 * (smoothpulse(fcoord,0.4,0.5,0.9,1.0)) * pow(getAudioDataSample(audioDataTex,A_HH1_edge,pulsePos),4.0 );
 
+
+	return PosCol(vec4(p,s),col);
+}
+
+PosCol rose1(vec2 coord)
+{
+	vec3 p;
+	float s = 5.0;
+	vec4 col = vec4(0.4,0.4,0.4,0.15);
+
+	//float pulsePos = currentPositionEst - (coord.y * (0.5 + sin(coord.x * 17.0 + time) * 0.05));  // speed of animation
+	//float pulsePos = currentPositionEst - (coord.y * 0.4);  // speed of animation
+	float pulsePos = currentPositionEst - (coord.y * (0.3 + hash(coord.x * 17.0) * 0.2));  // speed of animation
+
+	float filterIndex = floor(mod(coord.x * 1024.0,5.0));  // index into the peak-frequency outputs.
+
+	float symmetry = 9.0;
+	float band = mod(floor(coord.x * 1024.0),2.0)*2.0-1.0;
+	band *= (3.0 + coord.y * 3.0) / symmetry;
+
+
+	float freq = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + filterIndex*2,pulsePos);
+	float level = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + filterIndex*2+1,pulsePos);
+	float spectrumLevel = scaleSpectrum(getSample(spectrumTex,vec2(freq,pulsePos))).b;
+
+	float twist = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
+
+	float angle = (freq * (band) + floor(coord.x * symmetry) / symmetry ) * PI * 2.0;  // + coord.y * level
+
+	//angle += sin(coord.y * 7.0) * twist * 0.1;
+
+	//angle += sin((coord.y + cos(time * 0.7))*20.0) * 0.1 + cos(coord.y * 73.0 + sin(time)) * 0.05;
+	//angle += hash13(vec3(coord,time*17.9)) * coord.y * 0.02;  // angle noise towards the edge
+
+	//float r = 0.5 + sin(coord.x * 76.0 + time*0.3) * 0.45; // * (0.5 + twist * 0.5);  // radius of tunnel
+	float r = 0.05 + hash(coord.x) * 0.5;  // random radius
+	vec3 basis = vec3(r*cos(angle),r*0.6*sin(angle),-4.0);
+
+	p = vec3(0.0,0.0,3.0) + basis * coord.y;
+	
+	//p.y *= (step(0.5,coord.x*coord.y)*2.0) - 1.0;
+
+
+	col.rgb = mix(getFreqColour(freq),vec3(0.1,0.1,0.1),0.8);
+	s = 0.5 + spectrumLevel * 6.0;
 
 	return PosCol(vec4(p,s),col);
 }
@@ -236,21 +283,22 @@ PosCol plane1(vec2 coord)
 
 void main(void)
 {
-	PosCol b = blob1(texcoord);
-	PosCol a;
+	//PosCol b = blob1(texcoord);
 
-	a = plane1(texcoord);
+	//PosCol b = plane1(texcoord);
+	PosCol a = rose1(texcoord);
 
-	float m = sin((texcoord.y+sin(time * 0.7)) * (texcoord.x * 3.3 + sin(time * 1.3))) * 0.5 + 0.5;
-	a.pos = mix(a.pos,b.pos,m);
-	a.col = mix(a.col,b.col,m);
-
-	//if (texcoord.y<0.5){
-	//	a = plane1(texcoord * vec2(1.0,2.0));
-	//}
-	//else{
-	//	//a = blob1((texcoord - vec2(0.0,0.5)) * vec2(1.0,2.0));
-	//}
+	//float m = hash13(vec3(texcoord.x,texcoord.y,time));
+	//a.pos = mix(a.pos,b.pos,m);
+	//a.col = mix(a.col,b.col,m);
+	/*
+	PosCol a ;
+	if (texcoord.y<0.5){
+		a = plane1(texcoord * vec2(1.0,2.0));
+	}
+	else{
+		a = rose1((texcoord - vec2(0.0,0.5)) * vec2(1.0,2.0));
+	}*/
 
 	out_Pos = a.pos;
 	out_Col = a.col;
