@@ -242,8 +242,8 @@ PosCol rose1(vec2 coord)
 	vec4 col = vec4(0.4,0.4,0.4,0.15);
 
 	//float pulsePos = currentPositionEst - (coord.y * (0.5 + sin(coord.x * 17.0 + time) * 0.05));  // speed of animation
-	//float pulsePos = currentPositionEst - (coord.y * 0.4);  // speed of animation
-	float pulsePos = currentPositionEst - (coord.y * (0.3 + hash(coord.x * 17.0) * 0.2));  // speed of animation
+	float pulsePos = currentPositionEst - (coord.y * 0.6);  // speed of animation
+	//float pulsePos = currentPositionEst - (coord.y * (0.3 + hash(coord.x * 17.0) * 0.2));  // speed of animation
 
 	float filterIndex = floor(mod(coord.x * 1024.0,5.0));  // index into the peak-frequency outputs.
 
@@ -284,13 +284,16 @@ PosCol rose1(vec2 coord)
 void main(void)
 {
 	//PosCol b = blob1(texcoord);
-
-	//PosCol b = plane1(texcoord);
 	PosCol a = rose1(texcoord);
 
-	//float m = hash13(vec3(texcoord.x,texcoord.y,time));
-	//a.pos = mix(a.pos,b.pos,m);
-	//a.col = mix(a.col,b.col,m);
+	/*
+	PosCol a = plane1(texcoord);
+	PosCol b = rose1(texcoord);
+
+	float m = abs(sin(texcoord.y * 4.0 - time * 0.2));
+	a.pos = mix(a.pos,b.pos,m);
+	a.col = mix(a.col,b.col,m);
+	*/
 	/*
 	PosCol a ;
 	if (texcoord.y<0.5){
