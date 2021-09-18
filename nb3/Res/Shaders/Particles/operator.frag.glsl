@@ -247,7 +247,10 @@ PosCol rose1(vec2 coord)
 
 	float filterIndex = floor(mod(coord.x * 1024.0,5.0));  // index into the peak-frequency outputs.
 
-	float symmetry = 9.0;
+	float symmetry = 3.0;
+
+	//symmetry *= (1.0 + smoothstep(0.8,0.9,getAudioDataSample(audioDataTex,A_KD3_edge,currentPositionEst))) * 3.0;
+
 	float band = mod(floor(coord.x * 1024.0),2.0)*2.0-1.0;
 	band *= (3.0 + coord.y * 3.0) / symmetry;
 
@@ -273,9 +276,14 @@ PosCol rose1(vec2 coord)
 	
 	//p.y *= (step(0.5,coord.x*coord.y)*2.0) - 1.0;
 
+	float bassdrum = smoothstep(0.8,0.95,getAudioDataSample(audioDataTex,A_KD3_edge,currentPositionEst));
+	//float hihat = smoothstep(0.8,0.95,getAudioDataSample(audioDataTex,A_HH2_edge,currentPositionEst));
+
+	//float sizescale = smoothstep(0.8,0.95,bassdrum);
+
 
 	col.rgb = mix(getFreqColour(freq),vec3(0.1,0.1,0.1),0.8);
-	s = 0.5 + spectrumLevel * 6.0;
+	s = 0.5 + spectrumLevel * mix(4.0,12.0,bassdrum);
 
 	return PosCol(vec4(p,s),col);
 }

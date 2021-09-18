@@ -46,6 +46,9 @@ namespace nb3.Vis
         private FileSystemPoller shaderUpdatePoller = new FileSystemPoller(SHADERPATH.Split(';')[0]);
         private double lastShaderPollTime = 0.0;
 
+        private object threadLock = new object();
+
+
         private ConcurrentQueue<AudioAnalysisSample> sampleQueue = new ConcurrentQueue<AudioAnalysisSample>();
 
         private float[] tempSpectrum = new float[Globals.SPECTRUMRES]; // this will be coming in from the analysis side.
@@ -95,18 +98,25 @@ namespace nb3.Vis
         public VisHost(Player.Player player)
             : base(
                   GameWindowSettings.Default,
+                  //new GameWindowSettings {
+                  //    IsMultiThreaded = false,
+                  //    UpdateFrequency = 120
+                  //},
                   new NativeWindowSettings
                   {
-                      Size = new Vector2i(800, 600),
+                      Size = new Vector2i(1600, 900),
                       APIVersion = new Version(4, 5),
                       Profile = ContextProfile.Compatability,
                       Flags = ContextFlags.Default,
-                      Title = "NeuralBeat3"
+                      Title = "NeuralBeat3",
+                      API = ContextAPI.OpenGL
                   })
         {
             Player = player;
 
-            //TargetRenderFrequency = 120f;
+
+            //TargetRenderFrequency = 144f;
+            //this.RenderFrequency = 144.0;
             VSync = VSyncMode.On;
 
             UpdateFrame += VisHost_UpdateFrame;
@@ -138,7 +148,6 @@ namespace nb3.Vis
             components.Add(frameCounter = new OpenTKExtensions.Components.FrameCounter(font));
             components.Add(switcher = new ComponentSwitcher() { KeyForward = new KeySpec(Keys.Tab), KeyBackward = new KeySpec(Keys.Tab, KeyModifiers.Shift) });
 
-            //components.Add(new Renderers.Components.DebugSpectrumWaterfall());
             switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player));
             switcher.Add(new Renderers.BasicShaderRenderer());
             switcher.Add(new Renderers.ParticleRenderer());
@@ -208,67 +217,75 @@ namespace nb3.Vis
 
         private void VisHost_RenderFrame(FrameEventArgs e)
         {
-            double time = timer.Elapsed.TotalSeconds;
-            frameData.DeltaRenderTime = time - frameData.RenderTime;
-            frameData.RenderTime = time;
+            //lock (this.threadLock)
+            //{
+                double time = timer.Elapsed.TotalSeconds;
+                frameData.DeltaRenderTime = time - frameData.RenderTime;
+                frameData.RenderTime = time;
 
-            if (shaderUpdatePoller.HasChanges)
-            {
-                components.Reload();
-                shaderUpdatePoller.Reset();
-            }
+                if (shaderUpdatePoller.HasChanges)
+                {
+                    components.Reload();
+                    shaderUpdatePoller.Reset();
+                }
 
-            //text.AddOrUpdate(title);
+                //text.AddOrUpdate(title);
 
-            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            GL.ClearDepth(1.0);
-            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-
-            components.Render(frameData);
-
+                GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                GL.ClearDepth(1.0);
+                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 
-            GL.Disable(EnableCap.DepthTest);
-            GL.Enable(EnableCap.Blend);
+                components.Render(frameData);
 
-            //text.Render();
 
-            SwapBuffers();
-            Thread.Sleep(0);
+
+                //GL.Disable(EnableCap.DepthTest);
+                //GL.Enable(EnableCap.Blend);
+
+                //text.Render();
+
+                //GL.Finish();
+
+                SwapBuffers();
+                Thread.Sleep(0);
+            //}
         }
 
         private void VisHost_UpdateFrame(FrameEventArgs e)
         {
-            double time = timer.Elapsed.TotalSeconds;
-            frameData.DeltaTime = time - frameData.Time;
-            frameData.Time = time;
+            //lock (this.threadLock)
+            //{
+                double time = timer.Elapsed.TotalSeconds;
+                frameData.DeltaTime = time - frameData.Time;
+                frameData.Time = time;
 
-            // poll for shader changes
-            // TODO: make poll time a parameter
-            if (frameData.Time - lastShaderPollTime > 2.0)
-            {
-                shaderUpdatePoller.Poll();
-                lastShaderPollTime = frameData.Time;
-            }
+                // poll for shader changes
+                // TODO: make poll time a parameter
+                if (frameData.Time - lastShaderPollTime > 2.0)
+                {
+                    shaderUpdatePoller.Poll();
+                    lastShaderPollTime = frameData.Time;
+                }
 
-            if (Player != null && Player.TracksPlayed != lastTracksPlayed)
-            {
-                globalTextures.Reset();
-                Player?.WaveFormat.Maybe(wf => globalTextures.SampleRate = wf.SampleRate);
-                lastTracksPlayed = Player.TracksPlayed;
-            }
+                if (Player != null && Player.TracksPlayed != lastTracksPlayed)
+                {
+                    globalTextures.Reset();
+                    Player?.WaveFormat.Maybe(wf => globalTextures.SampleRate = wf.SampleRate);
+                    lastTracksPlayed = Player.TracksPlayed;
+                }
 
-            AudioAnalysisSample sample;
+                AudioAnalysisSample sample;
 
-            while (SampleQueue.TryDequeue(out sample))
-            {
-                globalTextures.PushSample(sample);
-            }
+                while (SampleQueue.TryDequeue(out sample))
+                {
+                    globalTextures.PushSample(sample);
+                }
 
-            components.Update(frameData);
+                components.Update(frameData);
 
-            Thread.Sleep(1);
+                Thread.Sleep(0);
+            //}
         }
 
         private void SetProjection(Vector2i size)
