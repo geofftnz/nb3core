@@ -38,7 +38,7 @@ namespace nb3.Player.Analysis.Filter
             neuralNetwork.SetInputs(Globals.SPECTRUMRES * HISTORY_SIZE);
             neuralNetwork.AddLayer(activationFunction, 4);
             neuralNetwork.AddLayer(activationFunction, 1);
-            neuralNetwork.LearningRate = 0.02f;
+            neuralNetwork.LearningRate = 0.25f;
             neuralNetwork.Momentum = 0.2f;
             context = neuralNetwork.GetNewContext();
         }
@@ -56,8 +56,8 @@ namespace nb3.Player.Analysis.Filter
             neuralNetwork.Train(context);
             neuralNetwork.Update();
             float error = context.TotalError;
-            avgError = avgError * 0.99f + 0.01f * error;
-            output[(int)Outputs.Error] = avgError;
+            avgError = avgError * 0.95f + 0.05f * error;
+            output[(int)Outputs.Error] = avgError * 4.0f;
 
             // fill context with current spectrum frame
             context.Set(frame.SpectrumDB.Take(context.InputCount));

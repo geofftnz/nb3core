@@ -298,19 +298,12 @@ vec4 renderSpectrum(vec2 t)
 
 
 	// marker for dominant frequency detector
-	float df = getAudioDataSample(audioDataTex,0.0,t.y);
-	float da = getAudioDataSample(audioDataTex,2.0,t.y);
-	//df = fscale_inv(df);
-	//df = fscale(df);
-	//df *= df;
-	//col.g += (1.0 - clamp(abs(df - t.y) * 300.0,0.0,1.0))*da*da ;
-	//float a = 1.0 - step(0.001,abs(original_tx - df));
-	float a = 1.0 - smoothstep(abs(t.x - df),0.0,0.001);  
-	//col.r += a * fade;
-	//col.g += a*da*da * fade;
-	col.g += a*da*da*3.;
+	//float df = getAudioDataSample(audioDataTex,0.0,t.y);
+	//float da = getAudioDataSample(audioDataTex,2.0,t.y);
+	//float a = 1.0 - smoothstep(abs(t.x - df),0.0,0.001);  
+	//col.g += a*da*da*3.;
 
-	col *= 0.1;
+	//col *= 0.1;
 
 	// multi-peak markers
 	//col += vec3(1.0,0.0,0.0) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
@@ -319,11 +312,11 @@ vec4 renderSpectrum(vec2 t)
 	//col += vec3(0.0,0.6,1.0) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
 	//col += vec3(0.0,0.0,1.0) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
 
-	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
-	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(1,t.y,t.x);
-	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(2,t.y,t.x);
-	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
-	col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
+	//col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(0,t.y,t.x);
+	//col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(1,t.y,t.x);
+	//col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(2,t.y,t.x);
+	//col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(3,t.y,t.x);
+	//col += getFreqColour(t.x) * getMultiPeakFilterMarkerIntensity(4,t.y,t.x);
 
 	return vec4(col * fade,1.0);
 }
