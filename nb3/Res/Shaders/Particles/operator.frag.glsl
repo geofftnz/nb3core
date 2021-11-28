@@ -17,9 +17,9 @@ uniform float currentPositionEst;
 #include "Common/filterParameters.glsl"
 
 // math ------------------------------------------------------------------------------
-#define PI 3.1415926535897932384626433832795
-#define PIOVER2 1.5707963267948966192313216916398
-#define LOGe10 2.30258509299
+#define PI 3.14159265
+#define PIOVER2 1.570796
+#define LOGe10 2.302585
 
 vec3 log10(vec3 s)
 {
@@ -257,7 +257,13 @@ PosCol rose1(vec2 coord)
 
 	float freq = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + filterIndex*2,pulsePos);
 	float level = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + filterIndex*2+1,pulsePos);
-	float spectrumLevel = scaleSpectrum(getSample(spectrumTex,vec2(freq,pulsePos))).b;
+
+	//float da = max(0.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)-0.05);
+	//(1.0 - smoothstep(abs(freq - df),0.0,0.0005)) * da*da*100.0;	
+
+	//float spectrumLevel = scaleSpectrum(getSample(spectrumTex,vec2(freq,pulsePos))).b;
+	float da = max(0.0,level-0.05);
+	float spectrumLevel = da*da*100.0;
 
 	float twist = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
 
@@ -288,28 +294,158 @@ PosCol rose1(vec2 coord)
 	return PosCol(vec4(p,s),col);
 }
 
+mat2 rot(float a){return mat2(cos(a),sin(a),-sin(a),cos(a));}
+
+PosCol blob2(vec2 coord)
+{
+	vec3 p = vec3(0.0);
+	float s = 4.0;
+	vec4 col = vec4(0.2,0.8,1.0,0.02);
+
+	// get last position
+	vec3 p0 = texture(particlePosTex,coord).rgb;
+
+	// get last-1 position
+	vec3 pminus1 = texture(particlePosPrevTex,coord).rgb;
+
+	vec3 v = vec3(0.);
+	
+	// determine if we need to init position+velocity
+	if (dot(p0,p0) == 0. && dot(pminus1,pminus1) == 0.)
+	{
+		// random position
+		p0 = randomPos(coord,0.);
+	}
+	else
+	{
+		// get velocity
+		v = (p0 - pminus1);
+	}
+
+	float hh = getAudioDataSample(audioDataTex,A_HH1_level,currentPositionEst);
+	float bd = getAudioDataSample(audioDataTex,A_BD_level,currentPositionEst);
+
+	// decay motion
+	v *= 0.25;
+
+	// brownian motion
+	v += randomPos(coord + p0.xy,time) * 0.001;
+	//v += randomPos(coord + p0.xy,time) * 0.1;  // reset
+
+	// attract to a certain distance from origin
+	float sphereRadius = 0.15 + getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst) * 0.25;
+
+	vec3 p0r = p0;
+	float a2 = p0.x * 0.7;
+	a2 += p0.y * 0.8;
+	p0r.yz *= rot(time + a2);
+	p0r.xy *= rot(time*1.13 + a2);
+	p0r.zx *= rot(time*1.29 + a2);
+	float freq = fscale(abs(p0r.y)+0.02);
+	vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst)));
+	sphereRadius += samp.b * 0.3;
+	float distToSphere = length(p0) - sphereRadius;
+	v += -normalize(p0) * distToSphere * 0.2;
+
+	s *= sphereRadius * 3.;
+
+
+	// orbiting attractors
+	//vec3 attr = vec3(cos(time),0.,-sin(time)).xzy * (sphereRadius + 0.2);
+	//v += (normalize(attr - p0) * 0.0001) / (1. + pow(length(attr-p0),4.0));
+
+
+	// peak trackers (x5)
+
+	if (coord.y < 0.5)
+	{
+		// choose a peak tracker for this particle
+		float filterIndex = floor(mod(coord.x * 1024.0,5.0));  // index into the peak-frequency outputs.
+
+		p0r = p0;
+		p0r.yz *= rot(time*0.96);
+		p0r.xy *= rot(time*1.07);
+		p0r.zx *= rot(time*0.72);
+
+		//float timeOfs = (0.01 - coord.y * 0.2);
+		float timeOfs = .0;//(abs(p0.x) * 0.0);
+		float freq = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + filterIndex*2,currentPositionEst-timeOfs);
+		float level = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + filterIndex*2+1,currentPositionEst-timeOfs);
+
+		// extra brownian motion based on intensity
+		v += randomPos(coord + p0.xy,time+0.73) * (0.01 / (max(0.0,level-0.001) * 10. + 0.1));
+
+		// attract y-coordinate to frequency
+		v.y += (freq*2. - p0.y-0.2) * level*0.25;
+		//v.y=0.;	p0.y = freq*2. - 0.2;
+		//col.rgb *= 0.2;
+		col.rgb = getFreqColour(freq) + vec3(0.05);
+		level = max(0.0,level-0.001);
+		col.a = level*level*.8;
+	}
+	else if (coord.y < 0.8)
+	{
+		//col.rgb = vec3(1.0);
+		col.rgb = vec3(0.4,0.6,0.9);
+		col.a = pow(hh,4.0) * 0.2;
+
+		v += p * -0.2 * pow(hh,4.0);
+		s *= .4;
+	}
+	else
+	{
+		col.rgb = vec3(0.1,0.2,0.9);
+		col.a = pow(bd,2.0) * 0.1;
+
+		v += p * -0.2;
+		s *= .5;
+	}
+
+	// move
+	p = p0 + v;
+
+	// colour from spectrum
+	//float fcoord = abs(coord.x-0.5)*2.0+0.01;
+	//float freq = fscale(coord.y);
+	//vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst)));
+	//col.rgb = getFreqColour(freq);
+	//col.a = 0.01 + getAudioDataSample(audioDataTex,A_KD3_edge,currentPositionEst) * 0.02;
+	//col.a = 1.0 / (1.0 + (p.z+1.0)*4.0);
+
+
+	return PosCol(vec4(p,s),col);
+}
+
+
 
 void main(void)
 {
 	//PosCol b = blob1(texcoord);
-	PosCol a = rose1(texcoord);
+	//PosCol a = rose1(texcoord);
 
-	/*
-	PosCol a = plane1(texcoord);
-	PosCol b = rose1(texcoord);
+	
+	//PosCol a = blob2(texcoord);
+	//PosCol b = rose1(texcoord);
+	//PosCol c = plane1(texcoord);
 
-	float m = abs(sin(texcoord.y * 4.0 - time * 0.2));
-	a.pos = mix(a.pos,b.pos,m);
-	a.col = mix(a.col,b.col,m);
-	*/
-	/*
-	PosCol a ;
-	if (texcoord.y<0.5){
-		a = plane1(texcoord * vec2(1.0,2.0));
-	}
-	else{
-		a = rose1((texcoord - vec2(0.0,0.5)) * vec2(1.0,2.0));
-	}*/
+	//float m = abs(sin(texcoord.y * 4.0 - time * 0.2));
+	//float m = 1.0 - getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst)*0.1;
+	//a.pos = mix(a.pos,b.pos,m);
+	//a.col = mix(a.col,b.col,m);
+
+	PosCol a = blob2(texcoord);
+
+
+	//m = getAudioDataSample(audioDataTex,A_DF_LP1,currentPositionEst)*0.2;
+	//a.pos = mix(a.pos,c.pos,m);
+
+	//PosCol a ;
+	//if (texcoord.y<0.5){
+	//	a = plane1(texcoord * vec2(1.0,2.0));
+	//}
+	//else{
+	//	a = rose1((texcoord - vec2(0.0,0.5)) * vec2(1.0,2.0));
+	//}
 
 	out_Pos = a.pos;
 	out_Col = a.col;

@@ -19,6 +19,7 @@
     <None Remove="Res\Font\lucon.ttf_sdf.1024.txt" />
     <None Remove="Res\Shaders\Common\gamma.glsl" />
     <None Remove="Res\Shaders\debugaudiodata.glsl" />
+    <None Remove="Res\Shaders\debugpeakfreq.glsl" />
     <None Remove="Res\Shaders\debugspectrum.glsl" />
     <None Remove="Res\Shaders\Effects\pulse.glsl" />
     <None Remove="Res\Shaders\shaderhost.glsl" />
@@ -60,6 +61,12 @@
     <PackageReference Include="NAudio.Vorbis" Version="1.2.0" />
     <PackageReference Include="NeuralNetwork" Version="1.0.1" />
     <PackageReference Include="OpenTK4Extensions" Version="1.0.21" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Res\Shaders\debugpeakfreq.glsl">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

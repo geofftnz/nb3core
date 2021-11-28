@@ -25,13 +25,10 @@ namespace nb3.Vis.Renderers
         private DebugSpectrum2 waterfall2;
         private DebugSpectrum spectrum;
         private DebugAudioData datagraphs;
+        private BasicShaderHost freqTracker;
 
         private Matrix4 projection = Matrix4.Identity;
         private Matrix4 view = Matrix4.Identity;
-        private Matrix4 waterfallModel = Matrix4.Identity;
-        private Matrix4 waterfall2Model = Matrix4.Identity;
-        private Matrix4 spectrumModel = Matrix4.Identity;
-        private Matrix4 audioDataModel = Matrix4.Identity;
 
         private ParameterEditor parameterEditor;
         private KeyboardActionManager keyboardActions;
@@ -51,22 +48,13 @@ namespace nb3.Vis.Renderers
         {
             projection = Matrix4.CreateOrthographicOffCenter(0f, 1f, 1f, 0f, 0.0f, 10f);  // 0,0 in top left
 
-            //waterfallModel = Matrix4.CreateScale(1.0f, 0.5f, 1.0f) * Matrix4.CreateTranslation(0.0f, 0.5f, 0.0f);
-            //spectrumModel = Matrix4.CreateScale(1.0f, 0.2f, 1.0f) * Matrix4.CreateTranslation(0.0f, 0.3f, 0.0f);
-            //waterfall2Model = Matrix4.CreateScale(1.0f, 0.3f, 1.0f) * Matrix4.CreateTranslation(0.0f, 0.0f, 0.0f);
-            //audioDataModel = Matrix4.CreateScale(1.0f, 20.0f, 1.0f) * Matrix4.CreateTranslation(0.0f, -20.0f, 0.0f);
-
             float offset = 1.0f;
-            waterfallModel = GetLayout(0.5f, ref offset);
-            spectrumModel = GetLayout(0.2f, ref offset);
-            waterfall2Model = GetLayout(0.2f, ref offset);
-            audioDataModel = GetLayout(10.0f, ref offset);  // 20
-
             int drawOrder = 1;
-            components.Add(waterfall = new DebugSpectrumWaterfall() { DrawOrder = drawOrder++, ModelMatrix = waterfallModel, ProjectionMatrix = projection });
-            components.Add(spectrum = new DebugSpectrum() { DrawOrder = drawOrder++, ModelMatrix = spectrumModel, ProjectionMatrix = projection });
-            components.Add(waterfall2 = new DebugSpectrum2() { DrawOrder = drawOrder++, ModelMatrix = waterfall2Model, ProjectionMatrix = projection });
-            components.Add(datagraphs = new DebugAudioData(font, player.FilterOutputNames) { DrawOrder = drawOrder++, ModelMatrix = audioDataModel, ProjectionMatrix = projection });
+            components.Add(waterfall = new DebugSpectrumWaterfall() { DrawOrder = drawOrder++, ModelMatrix = GetLayout(0.5f, ref offset), ProjectionMatrix = projection });
+            components.Add(freqTracker = new BasicShaderHost("debugpeakfreq.glsl|vert", "debugpeakfreq.glsl|frag") { DrawOrder = drawOrder++, ModelMatrix = GetLayout(0.3f, ref offset), ProjectionMatrix = projection });
+            components.Add(spectrum = new DebugSpectrum() { DrawOrder = drawOrder++, ModelMatrix = GetLayout(0.2f, ref offset), ProjectionMatrix = projection });
+            components.Add(waterfall2 = new DebugSpectrum2() { DrawOrder = drawOrder++, ModelMatrix = GetLayout(0.2f, ref offset), ProjectionMatrix = projection });
+            components.Add(datagraphs = new DebugAudioData(font, player.FilterOutputNames) { DrawOrder = drawOrder++, ModelMatrix = GetLayout(10.0f, ref offset), ProjectionMatrix = projection });
             components.Add(keyboardActions = new KeyboardActionManager() { KeyboardPriority = 100 }, 1);
 
             components.Add(parameterEditor = new ParameterEditor(font) { DrawOrder = drawOrder++ });

@@ -116,6 +116,7 @@ namespace nb3.Vis.Renderers
             this.frameData = fd;
 
             base.Render(frameData);
+            model.SwapBuffers(); // TODO: this should happen automatically - move it to the particle system.
         }
     }
 }

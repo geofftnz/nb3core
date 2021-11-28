@@ -79,6 +79,7 @@ namespace nb3.Player
 
             reader?.Close();
             reader?.Dispose();
+            reader = null;
 
             output = outputFactory();
             reader = new AudioFileReader2(filename);

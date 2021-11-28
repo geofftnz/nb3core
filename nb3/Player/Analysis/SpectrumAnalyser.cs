@@ -54,7 +54,7 @@ namespace nb3.Player.Analysis
 
             //AddFilter(new BroadbandTransientFilter("CL1", 8, 16) { Threshold = 0.15f });
             //AddFilter(new BroadbandTransientFilter("CL2", 16, 16) { Threshold = 0.15f });
-            AddFilter(new NeuralNetworkFilter("NN01"));
+            //AddFilter(new NeuralNetworkFilter("NN01"));
         }
 
         public void Process(AudioAnalysisSample frame)
