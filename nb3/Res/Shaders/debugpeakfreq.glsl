@@ -43,7 +43,6 @@ float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float fre
 	float da = max(0.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)-0.05);
 
 	return (1.0 - smoothstep(abs(freq - df),0.0,0.0005)) * da*da*100.0;	
-	//return (1.0 - step(0.001,abs(freq - df))) * da*da*100.0;	
 }
 
 vec3 getFreqColour(float f)

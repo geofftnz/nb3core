@@ -416,6 +416,100 @@ PosCol blob2(vec2 coord)
 	return PosCol(vec4(p,s),col);
 }
 
+float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float freq)
+{
+	float df = getAudioDataSample(audioDataTex,5. + markerIndex * 2.,time);  // freq+level pairs starting at index 5
+	float da = max(0.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)-0.05);
+
+	return (1.0 - smoothstep(abs(freq - df),0.0,0.002)) * da*da*200.0;	
+}
+vec3 getFreqColour3(float f)
+{
+	return mix(vec3(0.1,0.05,1.0),vec3(0.02,1.0,0.8),f);
+}
+
+PosCol blob3(vec2 coord)
+{
+	vec3 p = vec3(0.0);
+	float s = 4.0;
+	vec4 col = vec4(0.1,0.2,1.0,0.02);
+
+	// get last position
+	vec3 p0 = texture(particlePosTex,coord).rgb;
+	
+	// get last-1 position
+	vec3 pminus1 = texture(particlePosPrevTex,coord).rgb;
+	
+	vec3 v = vec3(0.);
+	
+	// determine if we need to init position+velocity
+	if ((dot(p0,p0) == 0. && dot(pminus1,pminus1) == 0.) || (hash13(p0 + vec3(time)) < 0.01))
+	{
+		// random position
+		p0 = randomPos(coord,0.);
+		if (dot(p0,p0) > 1.) p0 = randomPos(coord,0.);
+		if (dot(p0,p0) > 1.) p0 = randomPos(coord,0.);
+	}
+	else
+	{
+		// get velocity
+		v = (p0 - pminus1);
+	}
+
+	float sn = getAudioDataSample(audioDataTex,A_SN_level,currentPositionEst);
+	float hh = getAudioDataSample(audioDataTex,A_HH1_level,currentPositionEst);
+	float bd = getAudioDataSample(audioDataTex,A_BD_level,currentPositionEst);
+
+	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
+
+	// decay motion
+	v *= 0.1;
+
+
+	// brownian motion
+	v += randomPos(coord + p0.xy,time) * bd * 0.0001;
+	//v += randomPos(coord + p0.xy,time) * 0.1;  // reset
+	//p0 = normalize(randomPos(coord + p0.xy,time)) * 0.2;
+
+	// attract to a certain distance from origin
+	float sphereRadius = 0.2 + complexity * 0.15;
+
+	vec3 p0r = p0;
+	float twist = 0.3 + complexity * 0.8;
+	float a2 = p0.x * twist;
+	a2 += p0.y * twist;
+
+	p0r.yz *= rot(time*0.3 + a2);
+	p0r.xy *= rot(time*0.5 + a2);
+	p0r.zx *= rot(time*0.7 + a2);
+	float freq = fscale(abs(p0r.y)+0.02);
+	vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst)));
+	sphereRadius += samp.b * 0.3;
+	float distToSphere = length(p0) - sphereRadius;
+	v += -normalize(p0) * distToSphere * 0.8;
+
+	s *= sphereRadius * 1.5;
+
+
+	// colour based on peak trackers
+	vec3 pcol = vec3(0.0);
+	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(0,currentPositionEst,freq);
+	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(1,currentPositionEst,freq);
+	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(2,currentPositionEst,freq);
+	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(3,currentPositionEst,freq);
+	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(4,currentPositionEst,freq);
+
+	col = vec4(vec3(0.),0.2);
+	col.rgb += vec3(1.0,0.2,0.05) * bd*bd * 0.4;
+	col.rgb += vec3(0.05,0.2,1.0) * hh*hh * 0.4;
+	col.rgb += pcol;
+
+	// move
+	p = p0 + v;
+
+	return PosCol(vec4(p,s),col);
+}
+
 
 
 void main(void)
@@ -425,15 +519,21 @@ void main(void)
 
 	
 	//PosCol a = blob2(texcoord);
-	//PosCol b = rose1(texcoord);
-	//PosCol c = plane1(texcoord);
+	//PosCol a = rose1(texcoord);
+	//PosCol a = plane1(texcoord);
 
-	//float m = abs(sin(texcoord.y * 4.0 - time * 0.2));
+	//float m = (1.+sin(texcoord.x * 7.5 + time * 0.2))*.5;
+	//float m2 = 0.05;//abs(sin(texcoord.x * 0.5 + time * 0.2));
 	//float m = 1.0 - getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst)*0.1;
+
+	PosCol a = blob3(texcoord);
+	//PosCol b = blob3(texcoord);
+
 	//a.pos = mix(a.pos,b.pos,m);
 	//a.col = mix(a.col,b.col,m);
-
-	PosCol a = blob2(texcoord);
+	//
+	//a.pos = mix(a.pos,c.pos,m2);
+	//a.col = mix(a.col,c.col,m2);
 
 
 	//m = getAudioDataSample(audioDataTex,A_DF_LP1,currentPositionEst)*0.2;
