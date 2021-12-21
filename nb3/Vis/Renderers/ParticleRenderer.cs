@@ -15,8 +15,8 @@ namespace nb3.Vis.Renderers
 {
     public class ParticleRenderer : CompositeGameComponent, IRenderable, IUpdateable, IReloadable, IKeyboardControllable, ITransformable, IResizeable
     {
-        private const int particleArrayWidth = 1024;
-        private const int particleArrayHeight = 1024;
+        private const int particleArrayWidth = 2048;
+        private const int particleArrayHeight = 2048;
 
         private DefaultParticleModel model;
         private IParticleRenderTarget renderTarget;

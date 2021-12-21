@@ -146,7 +146,7 @@ namespace nb3.Player
                 {
                     
                     // Sometimes a NullReferenceException will bubble up here from VorbisWaveReader (and others?)
-                    return sampleChannel.Read(buffer, offset, count);
+                    return sampleChannel?.Read(buffer, offset, count) ?? 0;
                 }
                 catch(Exception) // TODO: FIX FILTHY HACK
                 {

@@ -15,6 +15,8 @@ uniform float currentPosition;
 uniform float currentPositionEst;
 
 #include "Common/filterParameters.glsl"
+#include "Common/noise4d.glsl"
+
 
 // math ------------------------------------------------------------------------------
 #define PI 3.14159265
@@ -510,6 +512,97 @@ PosCol blob3(vec2 coord)
 	return PosCol(vec4(p,s),col);
 }
 
+PosCol flow1(vec2 coord)
+{
+	vec3 p = vec3(0.0);
+	//float s = 0.5 + hash13(vec3(coord,0.)) * 3.;
+	float s = 1.5;
+	vec4 col = vec4(1.0,0.1,0.05,0.1);
+
+	// get last position & col
+	vec3 p0 = texture(particlePosTex,coord).rgb;
+	vec4 col0 = texture(particleColTex,coord);
+	
+	// get last-1 position
+	vec3 pminus1 = texture(particlePosPrevTex,coord).rgb;
+	
+	vec3 v = vec3(0.);
+	
+	// determine if we need to init position+velocity
+	if ((dot(p0,p0) == 0. && dot(pminus1,pminus1) == 0.) || (hash13(p0*17. + vec3(time)) > 0.99))
+	{
+		// random position
+		p0 = randomPos(coord,time);
+		if (dot(p0,p0) > 1.) p0 = randomPos(coord,time+1.);
+		if (dot(p0,p0) > 1.) p0 = randomPos(coord,time+2.);
+
+		col0.rgb = normalize(p0.xyz) * 0.9 + vec3(0.1);
+		col0.a = 0.1;
+	}
+	else
+	{
+		// get velocity
+		v = (p0 - pminus1);
+		if (dot(v,v)>1.) v = vec3(0.);
+	}
+
+	float sn = getAudioDataSample(audioDataTex,A_SN_level,currentPositionEst);
+	float hh = getAudioDataSample(audioDataTex,A_HH1_level,currentPositionEst);
+	float bd = getAudioDataSample(audioDataTex,A_BD_level,currentPositionEst);
+
+	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
+
+	// decay motion
+	v *= 0.8;
+	//p0 *= 0.99;
+
+	// add noise1
+	vec3 pv = p0 * 3.7 * (complexity + .3);
+	float a = 0.001 + complexity * 0.0001 + hash13(vec3(coord,0.)) * 0.00001;
+	float t = time * 0.8;
+	v.x += (snoise(vec4(pv,0.+t)))*a;
+	v.y += (snoise(vec4(pv,1.+t)))*a;
+	v.z += (snoise(vec4(pv,2.+t)))*a;
+
+
+	pv *= 2.; a*= .5;
+	v.x += (snoise(vec4(pv,0.+t)))*a;
+	v.y += (snoise(vec4(pv,1.+t)))*a;
+	v.z += (snoise(vec4(pv,2.+t)))*a;
+
+	//pv *= 2.; a*= .5;
+	//v.x += (snoise(vec4(pv,0.+t)))*a;
+	//v.y += (snoise(vec4(pv,1.+t)))*a;
+	//v.z += (snoise(vec4(pv,2.+t)))*a;
+
+	//pv *= 2.; a*= .5;
+	//v.x += (snoise(vec4(pv,0.+t)))*a;
+	//v.y += (snoise(vec4(pv,1.+t)))*a;
+	//v.z += (snoise(vec4(pv,2.+t)))*a;
+
+	//col = vec4(1.0,0.6,0.2,0.1);
+
+
+	// brownian motion
+	//v += randomPos(coord + p0.xy,time) * sn * 0.0001;
+	//v += randomPos(coord + p0.xy,time) * 0.1;  // reset
+	//p0 = normalize(randomPos(coord + p0.xy,time)) * 0.2;
+
+	//v += p0 * -0.0001;
+	float distToSphere = length(p0) - 0.4;
+	v += -normalize(p0) * distToSphere * (0.005);
+
+
+
+	// move
+	p = p0 + v * (1.+.1*hash13(vec3(coord,1.)));
+	col.rgb = col0.rgb;
+
+	//col.rgb = normalize(p.xyz) * 0.9 + vec3(0.1);
+	//col.rgb = normalize(v) * 0.5 + 0.5;
+
+	return PosCol(vec4(p,s),col);
+}
 
 
 void main(void)
@@ -526,8 +619,8 @@ void main(void)
 	//float m2 = 0.05;//abs(sin(texcoord.x * 0.5 + time * 0.2));
 	//float m = 1.0 - getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst)*0.1;
 
+	//PosCol a = flow1(texcoord);
 	PosCol a = blob3(texcoord);
-	//PosCol b = blob3(texcoord);
 
 	//a.pos = mix(a.pos,b.pos,m);
 	//a.col = mix(a.col,b.col,m);
