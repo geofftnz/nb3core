@@ -22,6 +22,8 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.GraphicsLibraryFramework;
 using NLog;
+using OpenTKExtensions.Framework.Graph;
+using nb3.Vis.Renderers.Nodes;
 
 namespace nb3.Vis
 {
@@ -152,6 +154,14 @@ namespace nb3.Vis
             switcher.Add(new Renderers.BasicShaderRenderer());
             switcher.Add(new Renderers.ParticleRenderer());
 
+            var graph = new ComponentGraph();
+            graph.Add(new ParticleNode() { Name = "particles"});
+            graph.Add(new ScreenOutputNode() { Name = "output" }); ;
+            graph.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "output", Port = "tex" });
+
+            switcher.Add(graph);
+
+
             //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }
 
@@ -219,36 +229,36 @@ namespace nb3.Vis
         {
             //lock (this.threadLock)
             //{
-                double time = timer.Elapsed.TotalSeconds;
-                frameData.DeltaRenderTime = time - frameData.RenderTime;
-                frameData.RenderTime = time;
+            double time = timer.Elapsed.TotalSeconds;
+            frameData.DeltaRenderTime = time - frameData.RenderTime;
+            frameData.RenderTime = time;
 
-                if (shaderUpdatePoller.HasChanges)
-                {
-                    components.Reload();
-                    shaderUpdatePoller.Reset();
-                }
+            if (shaderUpdatePoller.HasChanges)
+            {
+                components.Reload();
+                shaderUpdatePoller.Reset();
+            }
 
-                //text.AddOrUpdate(title);
+            //text.AddOrUpdate(title);
 
-                GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                GL.ClearDepth(1.0);
-                GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
-
-
-                components.Render(frameData);
+            GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            GL.ClearDepth(1.0);
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
 
+            components.Render(frameData);
 
-                //GL.Disable(EnableCap.DepthTest);
-                //GL.Enable(EnableCap.Blend);
 
-                //text.Render();
 
-                //GL.Finish();
+            //GL.Disable(EnableCap.DepthTest);
+            //GL.Enable(EnableCap.Blend);
 
-                SwapBuffers();
-                Thread.Sleep(0);
+            //text.Render();
+
+            //GL.Finish();
+
+            SwapBuffers();
+            Thread.Sleep(0);
             //}
         }
 
@@ -256,35 +266,35 @@ namespace nb3.Vis
         {
             //lock (this.threadLock)
             //{
-                double time = timer.Elapsed.TotalSeconds;
-                frameData.DeltaTime = time - frameData.Time;
-                frameData.Time = time;
+            double time = timer.Elapsed.TotalSeconds;
+            frameData.DeltaTime = time - frameData.Time;
+            frameData.Time = time;
 
-                // poll for shader changes
-                // TODO: make poll time a parameter
-                if (frameData.Time - lastShaderPollTime > 2.0)
-                {
-                    shaderUpdatePoller.Poll();
-                    lastShaderPollTime = frameData.Time;
-                }
+            // poll for shader changes
+            // TODO: make poll time a parameter
+            if (frameData.Time - lastShaderPollTime > 2.0)
+            {
+                shaderUpdatePoller.Poll();
+                lastShaderPollTime = frameData.Time;
+            }
 
-                if (Player != null && Player.TracksPlayed != lastTracksPlayed)
-                {
-                    globalTextures.Reset();
-                    Player?.WaveFormat.Maybe(wf => globalTextures.SampleRate = wf.SampleRate);
-                    lastTracksPlayed = Player.TracksPlayed;
-                }
+            if (Player != null && Player.TracksPlayed != lastTracksPlayed)
+            {
+                globalTextures.Reset();
+                Player?.WaveFormat.Maybe(wf => globalTextures.SampleRate = wf.SampleRate);
+                lastTracksPlayed = Player.TracksPlayed;
+            }
 
-                AudioAnalysisSample sample;
+            AudioAnalysisSample sample;
 
-                while (SampleQueue.TryDequeue(out sample))
-                {
-                    globalTextures.PushSample(sample);
-                }
+            while (SampleQueue.TryDequeue(out sample))
+            {
+                globalTextures.PushSample(sample);
+            }
 
-                components.Update(frameData);
+            components.Update(frameData);
 
-                Thread.Sleep(0);
+            Thread.Sleep(0);
             //}
         }
 

@@ -102,9 +102,9 @@ namespace nb3.Vis.Renderers
             }
         }
 
-        public override void Render(IFrameRenderData frameData)
+        public override void Render(IFrameRenderData frameData, IFrameBufferTarget target)
         {
-            base.Render(frameData);
+            base.Render(frameData, target);
         }
 
     }

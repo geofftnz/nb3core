@@ -49,7 +49,7 @@ namespace nb3.Vis.UI
 
         private int selectedIndex = -1;
 
-        private EditorEntry Current => (selectedIndex >= 0 && selectedIndex < entries.Count) ?  entries[selectedIndex] : null;
+        private EditorEntry Current => (selectedIndex >= 0 && selectedIndex < entries.Count) ? entries[selectedIndex] : null;
 
         public Vector4 ColourSelected { get; set; } = new Vector4(1f, 1f, 1f, 1f);
         public Vector4 ColourDeselected { get; set; } = new Vector4(1f, 1f, 1f, .3f);
@@ -154,9 +154,9 @@ namespace nb3.Vis.UI
             }
         }
 
-        public override void Render(IFrameRenderData frameData)
+        public override void Render(IFrameRenderData frameData, IFrameBufferTarget target)
         {
-            base.Render(frameData);
+            base.Render(frameData, target);
         }
 
         public override bool ProcessKeyDown(KeyboardKeyEventArgs e)

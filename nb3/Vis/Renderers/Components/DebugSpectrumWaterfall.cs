@@ -19,7 +19,7 @@ namespace nb3.Vis.Renderers.Components
     /// The texture will be supplied from the common texture set.
     /// 
     /// </summary>
-    public class DebugSpectrumWaterfall : OperatorComponentBase, IRenderable,  IReloadable, ITransformable
+    public class DebugSpectrumWaterfall : OperatorComponentBase, IRenderable, IReloadable, ITransformable
     {
         public Matrix4 ViewMatrix { get; set; } = Matrix4.Identity;
         public Matrix4 ModelMatrix { get; set; } = Matrix4.Identity;
@@ -27,7 +27,7 @@ namespace nb3.Vis.Renderers.Components
 
         private FrameData frameData = null;
 
-        public DebugSpectrumWaterfall() : base(@"DebugSpectrum.glsl|vert",@"DebugSpectrum.glsl|waterfall_frag")
+        public DebugSpectrumWaterfall() : base(@"DebugSpectrum.glsl|vert", @"DebugSpectrum.glsl|waterfall_frag")
         {
             TextureBinds = () =>
             {
@@ -54,10 +54,10 @@ namespace nb3.Vis.Renderers.Components
             };
         }
 
-        public override void Render(IFrameRenderData renderData)
+        public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
             frameData = renderData as FrameData;
-            base.Render(renderData);
+            base.Render(renderData, target);
         }
     }
 }

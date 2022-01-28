@@ -42,16 +42,18 @@ namespace nb3.Vis.Renderers
             components.Add(renderTarget = new PosColRenderTarget(particleArrayWidth, particleArrayHeight)
             {
                 DrawOrder = 1,
+                IsFinalOutput = false,
                 SetBuffers = (rt) =>
                 {
                     rt.SetOutput(0, model.ParticlePositionWrite);
                     rt.SetOutput(1, model.ParticleColourWrite);
                 }
-            });
+            }) ;
 
             // Add operator(s) to renderTarget. The operators write to the render target to alter the particles.
             renderTarget.Add(operator1 = new ParticleOperator()
             {
+                IsFinalOutput = true,
                 TextureBinds = () =>
                 {
                     if (frameData != null)
@@ -79,15 +81,16 @@ namespace nb3.Vis.Renderers
                         .SetUniform("currentPositionEst", frameData.GlobalTextures.EstimatedSamplePositionRelative);
                     }
                 }
-            });
+            }) ;
 
             // create the renderer, which renders GL_POINTS using vertices that point to texels in the model textures.
             components.Add(renderer = new ColourParticleRenderer("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", particleArrayWidth, particleArrayHeight)
             {
                 DrawOrder = 2,
+                IsFinalOutput = true,
                 ParticlePositionTextureFunc = () => model.ParticlePositionWrite,
                 ParticleColourTextureFunc = () => model.ParticleColourWrite
-            });
+            }) ;
 
             ProjectionMatrix = Matrix4.CreatePerspectiveFieldOfView(MathHelper.DegreesToRadians(60f), 16f / 9f, 0.0001f, 10f);
             ViewMatrix = Matrix4.LookAt(new Vector3(0f, 0f, -1f), new Vector3(0f, 0f, 0f), new Vector3(0f, 1f, 0f));
@@ -106,7 +109,7 @@ namespace nb3.Vis.Renderers
             base.Resize(width, height);
         }
 
-        public override void Render(IFrameRenderData frameData)
+        public override void Render(IFrameRenderData frameData, IFrameBufferTarget target)
         {
             var fd = frameData as FrameData;
             if (this.frameData != null && fd != null)
@@ -115,7 +118,7 @@ namespace nb3.Vis.Renderers
             }
             this.frameData = fd;
 
-            base.Render(frameData);
+            base.Render(frameData, target);
             model.SwapBuffers(); // TODO: this should happen automatically - move it to the particle system.
         }
     }

@@ -62,14 +62,14 @@ namespace nb3.Vis.Renderers.Components
 
             Loading += DebugAudioData_Loading;
             Unloading += DebugAudioData_Unloading;
-            
+
 
             if (outputNames != null)
             {
                 filterOutputNames.AddRange(outputNames);
             }
 
-            components.Add(textManager = new TextManager("tm", font) { DrawOrder = 2});
+            components.Add(textManager = new TextManager("tm", font) { DrawOrder = 2 });
         }
 
         private void DebugAudioData_Unloading(object sender, EventArgs e)
@@ -83,19 +83,19 @@ namespace nb3.Vis.Renderers.Components
 
             float rowsize = 2f / Globals.AUDIODATASIZE;
             int i = 0;
-            
-            foreach(var s in filterOutputNames)
+
+            foreach (var s in filterOutputNames)
             {
-                var tb = new TextBlock($"F{i:000}", $"{i:000} {s}", new Vector3(0.0f, 0.0f + (i+.5f) * rowsize, 0.0f), 0.07f / 1024f, new Vector4(1f, 1f, 1f, .2f));
+                var tb = new TextBlock($"F{i:000}", $"{i:000} {s}", new Vector3(0.0f, 0.0f + (i + .5f) * rowsize, 0.0f), 0.07f / 1024f, new Vector4(1f, 1f, 1f, .2f));
                 textManager.AddOrUpdate(tb);
                 i++;
             }
         }
 
-        public override void Render(IFrameRenderData renderData)
+        public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
             frameData = renderData as FrameData;
-            base.Render(renderData);
+            base.Render(renderData, target);  // We render our component (line graphs), then we render the text over the top (below).
 
             textManager.ModelMatrix = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f);
             textManager.ViewMatrix = ViewMatrix;
@@ -104,7 +104,16 @@ namespace nb3.Vis.Renderers.Components
 
             //components.Do<ITransformable>(c => { c.ViewMatrix = ViewMatrix; c.ProjectionMatrix = ProjectionMatrix; }); // TODO: temp hack until operatorcomponentbase is derived from compositecomponent
 
-            components.Render(renderData);
+            // TODO: this needs to be simplified. See note above about OperatorComponentBase / CompositeComponent etc
+            if (target != null)
+            {
+                components.RenderToTarget(renderData, target);
+            }
+            else
+            {
+                components.Render(renderData);
+            }
+
         }
 
         private void LayoutLabels()

@@ -536,7 +536,7 @@ PosCol flow1(vec2 coord)
 		if (dot(p0,p0) > 1.) p0 = randomPos(coord,time+1.);
 		if (dot(p0,p0) > 1.) p0 = randomPos(coord,time+2.);
 
-		col0.rgb = normalize(p0.xyz) * 0.9 + vec3(0.1);
+		col0.rgb = normalize(p0.xyz) * 0.8 + vec3(0.2);
 		col0.a = 0.1;
 	}
 	else
