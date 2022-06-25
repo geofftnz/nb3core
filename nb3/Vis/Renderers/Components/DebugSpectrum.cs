@@ -25,12 +25,12 @@ namespace nb3.Vis.Renderers.Components
         public Matrix4 ModelMatrix { get; set; } = Matrix4.Identity;
         public Matrix4 ProjectionMatrix { get; set; } = Matrix4.Identity;
 
-        private FrameData frameData = null;
 
         public DebugSpectrum() : base(@"debugspectrum.glsl|vert", @"debugspectrum.glsl|spectrum_frag")
         {
-            TextureBinds = () =>
+            TextureBinds = (fd) =>
             {
+                var frameData = fd as FrameData;
                 if (frameData != null)
                 {
                     frameData.GlobalTextures.SpectrumTex.Bind(TextureUnit.Texture0);
@@ -38,8 +38,9 @@ namespace nb3.Vis.Renderers.Components
                 }
             };
 
-            SetShaderUniforms = (sp) =>
+            SetShaderUniforms = (sp,fd) =>
             {
+                var frameData = fd as FrameData;
                 if (frameData != null && sp != null)
                 {
                     sp
@@ -56,7 +57,6 @@ namespace nb3.Vis.Renderers.Components
 
         public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
-            frameData = renderData as FrameData;
             base.Render(renderData, target);
         }
 

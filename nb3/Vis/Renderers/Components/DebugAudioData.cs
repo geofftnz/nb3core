@@ -28,8 +28,6 @@ namespace nb3.Vis.Renderers.Components
         public Matrix4 ModelMatrix { get; set; } = Matrix4.Identity;
         public Matrix4 ProjectionMatrix { get; set; } = Matrix4.Identity;
 
-        private FrameData frameData = null;
-
         // temporary component collection support until OperatorComponentBase can be changed to derive from a composite component.
         protected GameComponentCollection components = new GameComponentCollection();
 
@@ -38,16 +36,18 @@ namespace nb3.Vis.Renderers.Components
 
         public DebugAudioData(Font font, List<string> outputNames) : base(@"DebugAudioData.glsl|vert", @"DebugAudioData.glsl|frag")
         {
-            TextureBinds = () =>
+            TextureBinds = (fd) =>
             {
+                var frameData = fd as FrameData;
                 if (frameData != null)
                 {
                     frameData.GlobalTextures.AudioDataTex.Bind(TextureUnit.Texture0);
                 }
             };
 
-            SetShaderUniforms = (sp) =>
+            SetShaderUniforms = (sp,fd) =>
             {
+                var frameData = fd as FrameData;
                 if (frameData != null && sp != null)
                 {
                     sp
@@ -94,7 +94,6 @@ namespace nb3.Vis.Renderers.Components
 
         public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
-            frameData = renderData as FrameData;
             base.Render(renderData, target);  // We render our component (line graphs), then we render the text over the top (below).
 
             textManager.ModelMatrix = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f);

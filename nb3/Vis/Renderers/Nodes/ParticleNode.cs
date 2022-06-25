@@ -31,12 +31,12 @@ namespace nb3.Vis.Renderers.Nodes
 
         }
 
-        protected override void AssignInputs()
+        protected override void AssignInputs(IFrameRenderData frameData)
         {
             // no inputs
         }
 
-        protected override void AssignOutputs()
+        protected override void AssignOutputs(IFrameRenderData frameData)
         {
             _output["tex"].Value = GetTexture(0);
         }

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net5.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows</TargetFramework>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
@@ -60,7 +60,7 @@
     <PackageReference Include="NAudio.Flac.Port" Version="1.0.0" />
     <PackageReference Include="NAudio.Vorbis" Version="1.2.0" />
     <PackageReference Include="NeuralNetwork" Version="1.0.1" />
-    <PackageReference Include="OpenTK4Extensions" Version="1.0.63" />
+    <PackageReference Include="OpenTK4Extensions" Version="1.0.70" />
   </ItemGroup>
 
   <ItemGroup>

@@ -143,8 +143,7 @@ namespace nb3.Player
             lock (lockObject)
             {
                 try
-                {
-                    
+                {                    
                     // Sometimes a NullReferenceException will bubble up here from VorbisWaveReader (and others?)
                     return sampleChannel?.Read(buffer, offset, count) ?? 0;
                 }

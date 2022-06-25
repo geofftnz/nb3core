@@ -19,15 +19,27 @@ namespace nb3.Vis.Renderers.Nodes
             ChildComponent = new OperatorComponentBase("PostProcess/output.vert.glsl", "PostProcess/output.frag.glsl")
             {
                 IsFinalOutput = true,
-                TextureBinds = () =>
+                TextureBinds = (fd) =>
                 {
-                    (_input["tex"] as GraphNodeTexturePort).InternalValue.Bind(TextureUnit.Texture0);
+                    
+                    (fd as FrameData)?.GlobalTextures.SpectrumTex.Bind(TextureUnit.Texture0);
+                    (fd as FrameData)?.GlobalTextures.Spectrum2Tex.Bind(TextureUnit.Texture1);
+                    (fd as FrameData)?.GlobalTextures.AudioDataTex.Bind(TextureUnit.Texture2);
+                    (_input["tex"] as GraphNodeTexturePort).InternalValue.Bind(TextureUnit.Texture3);
                 },
-                SetShaderUniforms = (sp) =>
+                SetShaderUniforms = (sp,fd) =>
                 {
+                    var frameData = fd as FrameData;
                     if (sp != null)
                     {
-                        sp.SetUniform("inputTex", 0);
+                        sp
+                        .SetUniform("time", (float)frameData.Time)
+                        .SetUniform("spectrumTex", 0)
+                        .SetUniform("spectrum2Tex", 1)
+                        .SetUniform("audioDataTex", 2)
+                        .SetUniform("inputTex", 3)
+                        .SetUniform("currentPosition", frameData.GlobalTextures.SamplePositionRelative)
+                        .SetUniform("currentPositionEst", frameData.GlobalTextures.EstimatedSamplePositionRelative);
                     }
                 }
             };
@@ -41,12 +53,12 @@ namespace nb3.Vis.Renderers.Nodes
 
         }
 
-        protected override void AssignInputs()
+        protected override void AssignInputs(IFrameRenderData frameData)
         {
             (_input["tex"] as GraphNodeTexturePort).InternalValue.Bind(TextureUnit.Texture0);
         }
 
-        protected override void AssignOutputs()
+        protected override void AssignOutputs(IFrameRenderData frameData)
         {
             // no outputs
         }

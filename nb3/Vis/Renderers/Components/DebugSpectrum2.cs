@@ -25,23 +25,24 @@ namespace nb3.Vis.Renderers.Components
         public Matrix4 ModelMatrix { get; set; } = Matrix4.Identity;
         public Matrix4 ProjectionMatrix { get; set; } = Matrix4.Identity;
 
-        private FrameData frameData = null;
-
         public DebugSpectrum2() : base(@"DebugSpectrum.glsl|vert", @"DebugSpectrum.glsl|waterfall2_frag")
         {
-            TextureBinds = () =>
+            TextureBinds = (fd) =>
             {
+                var frameData = fd as FrameData;
                 if (frameData != null)
                 {
                     frameData.GlobalTextures.Spectrum2Tex.Bind(TextureUnit.Texture0);
                 }
             };
 
-            SetShaderUniforms = (sp) =>
+            SetShaderUniforms = (sp, fd) =>
             {
+                var frameData = fd as FrameData;
                 if (frameData != null && sp != null)
                 {
                     sp
+                    .SetUniform("time", (float)frameData.Time)
                     .SetUniform("spectrumTex", 0)
                     .SetUniform("projectionMatrix", ProjectionMatrix)
                     .SetUniform("modelMatrix", ModelMatrix)
@@ -54,7 +55,6 @@ namespace nb3.Vis.Renderers.Components
 
         public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
-            frameData = renderData as FrameData;
             base.Render(renderData, target);
         }
     }
