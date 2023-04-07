@@ -64,5 +64,14 @@ namespace nb3.Player.Analysis
             }
         }
 
+        public T this[int index]
+        {
+            get
+            {
+                return index < 0 || index >= length ? throw new IndexOutOfRangeException() : items[(current - 1 + length + length - index) % length];
+            }
+        }
+
+
     }
 }

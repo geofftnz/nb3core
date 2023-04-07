@@ -88,6 +88,10 @@ namespace nb3.Vis.Renderers.Components
             {
                 var tb = new TextBlock($"F{i:000}", $"{i:000} {s}", new Vector3(0.0f, 0.0f + (i + .5f) * rowsize, 0.0f), 0.07f / 1024f, new Vector4(1f, 1f, 1f, .2f));
                 textManager.AddOrUpdate(tb);
+
+                var tb2 = new TextBlock($"FV{i:000}", $"value", new Vector3(0.1f, 0.0f + (i + .5f) * rowsize, 0.0f), 0.07f / 1024f, new Vector4(1f, 1f, 1f, .2f));
+                textManager.AddOrUpdate(tb2);
+
                 i++;
             }
         }
@@ -95,6 +99,14 @@ namespace nb3.Vis.Renderers.Components
         public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
             base.Render(renderData, target);  // We render our component (line graphs), then we render the text over the top (below).
+
+
+            // update value display
+            for(int i = 0; i < filterOutputNames.Count; i++)
+            {
+                textManager.Blocks[$"FV{i:000}"].Text = $"{(renderData as FrameData)?.GlobalTextures.LastSample.AudioData[i]:0.000}";
+            }
+
 
             textManager.ModelMatrix = Matrix4.CreateScale(2f, ModelMatrix.Row1.Y, 1f);
             textManager.ViewMatrix = ViewMatrix;

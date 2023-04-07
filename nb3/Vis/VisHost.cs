@@ -152,6 +152,7 @@ namespace nb3.Vis
 
             switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player));
             switcher.Add(new Renderers.BasicShaderRenderer());
+            switcher.Add(new Renderers.BasicShaderRenderer("effects/spiral.glsl|effect"));
             switcher.Add(new Renderers.ParticleRenderer());
 
             var graph = new ComponentGraph();

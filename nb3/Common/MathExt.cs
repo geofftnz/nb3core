@@ -37,5 +37,39 @@ namespace nb3.Common
             var total = x.Sum();
             return x.Select(i => (i * sum_to) / total).ToArray();
         }
+
+        // ChatGPT
+        public static float[] CubicResample(this float[] input, int factor)
+        {
+            int n = input.Length;
+            int m = n * factor;
+            float[] output = new float[m];
+
+            for (int i = 0; i < m; i++)
+            {
+                float x = i / (float)factor;
+                int j = (int)x;
+                float a = x - j;
+
+                float y0 = input[Math.Max(0, j - 1)];
+                float y1 = input[j];
+                float y2 = input[Math.Min(n - 1, j + 1)];
+                float y3 = input[Math.Min(n - 1, j + 2)];
+
+                float a0 = y3 - y2 - y0 + y1;
+                float a1 = y0 - y1 - a0;
+                float a2 = y2 - y0;
+                float a3 = y1;
+
+                output[i] = ((a0 * a * a * a) + (a1 * a * a) + (a2 * a) + a3);
+            }
+
+            return output;
+        }
+
+        public static float Interpolate(float from, float to, float x)
+        {
+            return to * x + (1f - x) * from;
+        }
     }
 }

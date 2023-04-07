@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nb3", "nb3\nb3.csproj", "{FC847023-00E4-4ABC-9CCD-2FE41582FBBC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nb3", "nb3\nb3.csproj", "{FC847023-00E4-4ABC-9CCD-2FE41582FBBC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "nb3test", "nb3test\nb3test.csproj", "{6BA81CC5-89D5-4848-9A6C-ABE5888CCDF5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{FC847023-00E4-4ABC-9CCD-2FE41582FBBC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FC847023-00E4-4ABC-9CCD-2FE41582FBBC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FC847023-00E4-4ABC-9CCD-2FE41582FBBC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6BA81CC5-89D5-4848-9A6C-ABE5888CCDF5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6BA81CC5-89D5-4848-9A6C-ABE5888CCDF5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6BA81CC5-89D5-4848-9A6C-ABE5888CCDF5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6BA81CC5-89D5-4848-9A6C-ABE5888CCDF5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

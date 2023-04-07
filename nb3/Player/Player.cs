@@ -94,6 +94,8 @@ namespace nb3.Player
             {
                 int i = 0;
                 File.WriteAllLines("Res/Shaders/Common/filterParameters.glsl", spectrum.FilterOutputNames.Select(s => $"#define A_{s} {i++}"));
+                i = 0;
+                File.WriteAllLines("Res/Shaders/Common/filterParametersRuntime.glsl", spectrum.FilterOutputNames.Select(s => $"#define A_{s} {i++}"));
                 paramsWritten = true;
             }
         }

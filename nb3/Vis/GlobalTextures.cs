@@ -42,6 +42,7 @@ namespace nb3.Vis
         public Texture SpectrumTex { get; private set; }
         public Texture Spectrum2Tex { get; private set; }
         public Texture AudioDataTex { get; private set; }
+        public AudioAnalysisSample LastSample { get; set; }
 
         /// <summary>
         /// Texture V coordinate of last sample written.
@@ -145,6 +146,9 @@ namespace nb3.Vis
 
             if (sample.Spectrum2.Length < Globals.SPECTRUM2RES)
                 throw new IndexOutOfRangeException("spectrumData not large enough");
+
+            LastSample ??= new AudioAnalysisSample();
+            sample.CopyTo(LastSample);
 
             samplesPerFrame = sample.Samples;
             TotalSamples += sample.Samples;

@@ -101,8 +101,6 @@ namespace nb3.Player.Analysis
             return samplesRead;
         }
 
-        //private float[] mixtemp = new float[outputResolution2];
-
         private void AddSample(float[] samples, int offset, int channels)
         {
             // mono source - copy to both channels
@@ -133,12 +131,10 @@ namespace nb3.Player.Analysis
 
 
                 float[] f2 = new float[Globals.SPECTRUM2RES];
-                //var mixtemp = MixChannels(f, outputResolution * MAXCHANNELS, MAXCHANNELS).Select(x => x / (float)MAXCHANNELS).ToArray();
-                //fft2.Add(Resample(mixtemp, outputResolution2, x => x * x));
                 fft2.GenerateTo(f2, 0, Globals.SPECTRUM2RES);
 
 
-                var analysisSample = new AudioAnalysisSample(f, f2, new float[Globals.AUDIODATASIZE], frameInterval/*, analyser.OutputNames*/);
+                var analysisSample = new AudioAnalysisSample(f, f2, new float[Globals.AUDIODATASIZE], frameInterval, frameInterval / WaveFormat.SampleRate);
 
                 analyser.Process(analysisSample);
 

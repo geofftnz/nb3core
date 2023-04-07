@@ -24,6 +24,7 @@ uniform float currentPosition;
 uniform float currentPositionEst;
 
 #include "Common/gamma.glsl";
+#include "Common/filterParametersRuntime.glsl";
 
 #define DATARES 256
 
@@ -39,8 +40,8 @@ float fscale(float x)
 
 float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float freq)
 {
-	float df = getAudioDataSample(audioDataTex,5. + markerIndex * 2.,time);  // freq+level pairs starting at index 5
-	float da = max(0.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)-0.05);
+	float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);  // freq+level pairs starting at index 5
+	float da = max(0.0,getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time)-0.05);
 
 	return (1.0 - smoothstep(abs(freq - df),0.0,0.0005)) * da*da*100.0;	
 }

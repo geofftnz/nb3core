@@ -13,11 +13,19 @@ namespace nb3.Vis.Renderers
 
         private BasicShaderHost shaderHost;
 
-        public BasicShaderRenderer()
+        public BasicShaderRenderer(string vertexShaderFileName, string fragmentShaderFileName)
         {
-            components.Add(shaderHost = new BasicShaderHost(@"shaderhost.glsl|vert", @"effects/pulse.glsl|effect"));
+            components.Add(shaderHost = new BasicShaderHost(vertexShaderFileName, fragmentShaderFileName));
+        }
+        public BasicShaderRenderer(string fragmentShaderFileName)
+            : this(@"shaderhost.glsl|vert", fragmentShaderFileName)
+        {
         }
 
+        public BasicShaderRenderer()
+            : this(@"shaderhost.glsl|vert", @"effects/pulse.glsl|effect")
+        {
+        }
 
     }
 }

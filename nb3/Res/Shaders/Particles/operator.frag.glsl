@@ -14,7 +14,7 @@ uniform sampler2D particleColTex;
 uniform float currentPosition;
 uniform float currentPositionEst;
 
-#include "Common/filterParameters.glsl"
+#include "Common/filterParametersRuntime.glsl"
 #include "Common/noise4d.glsl"
 
 
@@ -474,7 +474,7 @@ PosCol blob3(vec2 coord)
 	//p0 = normalize(randomPos(coord + p0.xy,time)) * 0.2;
 
 	// attract to a certain distance from origin
-	float sphereRadius = 0.2 + complexity * 0.15;
+	float sphereRadius = 0.2 + complexity * 0.2;
 
 	vec3 p0r = p0;
 	float twist = 0.3 + complexity * 0.8;
@@ -558,14 +558,22 @@ PosCol flow1(vec2 coord)
 
 	// add noise1
 	vec3 pv = p0 * 3.7 * (complexity + .3);
-	float a = 0.001 + complexity * 0.0001 + hash13(vec3(coord,0.)) * 0.00001;
-	float t = time * 0.8;
+	float a = 0.01 + complexity * 0.0001 + hash13(vec3(coord,0.)) * 0.00001;
+
+	a*= 0.5;
+
+	float t = time * 0.02;
 	v.x += (snoise(vec4(pv,0.+t)))*a;
 	v.y += (snoise(vec4(pv,1.+t)))*a;
 	v.z += (snoise(vec4(pv,2.+t)))*a;
 
 
-	pv *= 2.; a*= .5;
+	pv *= 2.; a*= .5; t*= 2.0;
+	v.x += (snoise(vec4(pv,0.+t)))*a;
+	v.y += (snoise(vec4(pv,1.+t)))*a;
+	v.z += (snoise(vec4(pv,2.+t)))*a;
+
+	pv *= 2.; a*= .5; t*= 2.0;
 	v.x += (snoise(vec4(pv,0.+t)))*a;
 	v.y += (snoise(vec4(pv,1.+t)))*a;
 	v.z += (snoise(vec4(pv,2.+t)))*a;
@@ -610,20 +618,24 @@ void main(void)
 	//PosCol b = blob1(texcoord);
 	//PosCol a = rose1(texcoord);
 
-	
-	//PosCol a = blob2(texcoord);
+	//PosCol a = blob1(texcoord);
+	//PosCol b = blob2(texcoord);
 	//PosCol a = rose1(texcoord);
-	//PosCol a = plane1(texcoord);
+	//PosCol b = plane1(texcoord);
 
 	//float m = (1.+sin(texcoord.x * 7.5 + time * 0.2))*.5;
-	//float m2 = 0.05;//abs(sin(texcoord.x * 0.5 + time * 0.2));
-	//float m = 1.0 - getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst)*0.1;
+	//float m = sin(texcoord.x * 0.5 + time * 0.2) * 0.5 + 0.5;
+	float m = 
+		getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst) * 0.05 +
+		getAudioDataSample(audioDataTex,A_DF_LP1,currentPositionEst) * 0.02 +
+		0.1;
+	//float m = 0.05;
 
-	//PosCol a = flow1(texcoord);
-	PosCol a = blob3(texcoord);
+	PosCol a = flow1(texcoord);
+	PosCol b = blob3(texcoord);
 
-	//a.pos = mix(a.pos,b.pos,m);
-	//a.col = mix(a.col,b.col,m);
+	a.pos = mix(a.pos,b.pos,m);
+	a.col = mix(a.col,b.col,m);
 	//
 	//a.pos = mix(a.pos,c.pos,m2);
 	//a.col = mix(a.col,c.col,m2);

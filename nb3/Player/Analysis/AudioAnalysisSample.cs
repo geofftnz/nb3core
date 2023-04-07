@@ -13,19 +13,35 @@ namespace nb3.Player.Analysis
     public class AudioAnalysisSample
     {
         public int Samples { get; set; } = 1;
+        public double SampleSeconds { get; set; } = 1.0 / 180.0;  // Number of seconds covered by this frame
         public float[] Spectrum { get; set; } = null;
         public float[] Spectrum2 { get; set; } = null;
         public float[] AudioData { get; set; } = null;
 
-        //public List<string> AudioDataLabels { get; set; } = null;  // TODO: this should probably not be passed every frame.
+        public AudioAnalysisSample()
+        {
 
-        public AudioAnalysisSample(float[] spectrum, float[] spectrum2, float[] audioData, int samples/*, List<string> audioDataLabels*/)
+        }
+        public AudioAnalysisSample(float[] spectrum, float[] spectrum2, float[] audioData, int samples, double sampleSeconds)
         {
             Spectrum = spectrum;
             Spectrum2 = spectrum2;
             AudioData = audioData;
             Samples = samples;
-            //AudioDataLabels = audioDataLabels;
+            SampleSeconds = sampleSeconds;
+        }
+
+        public void CopyTo(AudioAnalysisSample dest)
+        {
+            dest.Samples = Samples;
+            dest.SampleSeconds = SampleSeconds;
+            dest.Spectrum ??= new float[Spectrum.Length];
+            dest.Spectrum2 ??= new float[Spectrum2.Length];
+            dest.AudioData ??= new float[AudioData.Length];
+
+            Spectrum?.CopyTo(dest.Spectrum, 0);
+            Spectrum2?.CopyTo(dest.Spectrum2, 0);
+            AudioData?.CopyTo(dest.AudioData, 0);
         }
     }
 }
