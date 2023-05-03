@@ -67,9 +67,8 @@ namespace nb3.Common
             return output;
         }
 
-        public static float Interpolate(float from, float to, float x)
-        {
-            return to * x + (1f - x) * from;
-        }
+        //public static float CubicTap(this float[] input, float )
+
+
     }
 }

@@ -104,7 +104,7 @@ namespace nb3.Vis.Renderers.Components
             // update value display
             for(int i = 0; i < filterOutputNames.Count; i++)
             {
-                textManager.Blocks[$"FV{i:000}"].Text = $"{(renderData as FrameData)?.GlobalTextures.LastSample.AudioData[i]:0.000}";
+                textManager.Blocks[$"FV{i:000}"].Text = $"{(renderData as FrameData)?.GlobalTextures?.LastSample?.AudioData[i] ?? 0f :0.000}";
             }
 
 

@@ -38,7 +38,7 @@ namespace nb3.Player
         // hacky exposing of filter output name list
         // TODO: This will probably throw a nullreferenceexception until a file is opened.
         public List<string> FilterOutputNames => spectrum?.FilterOutputNames ?? new List<string>();
-        public List<Tuple<string, FilterParameter>> FilterParameters => spectrum.FilterParameters ?? new List<Tuple<string, FilterParameter>>();
+        public List<Tuple<string, FilterParameter>> FilterParameters => spectrum?.FilterParameters ?? new List<Tuple<string, FilterParameter>>();
 
         public event EventHandler<FftEventArgs> SpectrumReady;
         public event EventHandler<PlayerStartEventArgs> PlayerStart;
