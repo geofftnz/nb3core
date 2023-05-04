@@ -63,14 +63,15 @@ float getAudioDataSample(sampler2D tex, float index, float time)
 void main(void)
 {
 
-	vec2 tc = floor(texcoord * 160.)/160.;
+	//vec2 tc = floor(texcoord * 160.)/160.;  // pixelate
+	vec2 tc = texcoord;
 
 	vec3 col = texture2D(inputTex,tc).rgb;
 
 	
 	// some repetition
 	//float twist = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
-
+	/*
 	vec2 p = (texcoord - vec2(.5));
 	float twist;
 	float m = .2;
@@ -84,7 +85,7 @@ void main(void)
 		col += texture2D(inputTex,p + vec2(.5)).rgb * m;
 	}
 	p=texcoord-vec2(.5); m=.2;
-
+	*/
 	//twist = texcoord.x * 3. + sin(texcoord.y * 7.) *2. + time * 0.1;
 	//twist = snoise(vec3(texcoord*.7,time * .2));
 	//for (int i=0;i<16;i++)
@@ -113,8 +114,9 @@ void main(void)
 	//col += col2 * 0.05 * (1. - abs(texcoord.x - tc2.x) * 2.);
 
 
-   //float bias = 1.0;
+   //float bias = 8.0;
    //col = Uncharted2Tonemap(col * bias);
+   
    //vec3 whiteScale = vec3(1.0)/Uncharted2Tonemap(vec3(W));
    //col = col * whiteScale;
 

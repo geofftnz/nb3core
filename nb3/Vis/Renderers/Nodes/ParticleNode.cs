@@ -12,7 +12,7 @@ namespace nb3.Vis.Renderers.Nodes
 {
     public class ParticleNode : RenderGraphNodeBase
     {
-        public ParticleNode() : base(false, true)
+        public ParticleNode() : base(false, SizeInheritance.Inherit)
         {
             ChildComponent = new ParticleRenderer();
             SetOutput(0, new TextureSlotParam(TextureTarget.Texture2D, PixelInternalFormat.Rgba16f, PixelFormat.Rgba, PixelType.HalfFloat, false,

@@ -64,7 +64,7 @@
     <PackageReference Include="NAudio.Flac.Port" Version="1.0.0" />
     <PackageReference Include="NAudio.Vorbis" Version="1.2.0" />
     <PackageReference Include="NeuralNetwork" Version="1.0.1" />
-    <PackageReference Include="OpenTK4Extensions" Version="1.0.70" />
+    <PackageReference Include="OpenTK4Extensions" Version="1.0.85" />
   </ItemGroup>
 
   <ItemGroup>

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace nb3.Vis.Renderers
 {
-    public class BasicShaderRenderer : CompositeGameComponent, IRenderable, IUpdateable, IReloadable, IKeyboardControllable
+    public class BasicShaderRenderer : CompositeGameComponent, IRenderable, IUpdateable, IReloadable, IKeyboardControllable, IResizeable
     {
 
         private BasicShaderHost shaderHost;

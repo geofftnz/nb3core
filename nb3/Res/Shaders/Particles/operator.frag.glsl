@@ -469,7 +469,7 @@ PosCol blob3(vec2 coord)
 
 
 	// brownian motion
-	v += randomPos(coord + p0.xy,time) * bd * 0.0001;
+	v += randomPos(coord + p0.xy,time) * bd * 0.0004;
 	//v += randomPos(coord + p0.xy,time) * 0.1;  // reset
 	//p0 = normalize(randomPos(coord + p0.xy,time)) * 0.2;
 
@@ -486,7 +486,7 @@ PosCol blob3(vec2 coord)
 	p0r.zx *= rot(time*0.7 + a2);
 	float freq = fscale(abs(p0r.y)+0.02);
 	vec4 samp = scaleSpectrum(getSample(spectrumTex,vec2(freq,currentPositionEst)));
-	sphereRadius += samp.b * 0.3;
+	sphereRadius += samp.b * 0.1;
 	float distToSphere = length(p0) - sphereRadius;
 	v += -normalize(p0) * distToSphere * 0.8;
 
@@ -621,21 +621,25 @@ void main(void)
 	//PosCol a = blob1(texcoord);
 	//PosCol b = blob2(texcoord);
 	//PosCol a = rose1(texcoord);
-	//PosCol b = plane1(texcoord);
+	//PosCol a = plane1(texcoord);
+	//PosCol a = flow1(texcoord);
 
 	//float m = (1.+sin(texcoord.x * 7.5 + time * 0.2))*.5;
 	//float m = sin(texcoord.x * 0.5 + time * 0.2) * 0.5 + 0.5;
 	float m = 
-		getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst) * 0.05 +
-		getAudioDataSample(audioDataTex,A_DF_LP1,currentPositionEst) * 0.02 +
+		getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst) * 0.1 +
+		getAudioDataSample(audioDataTex,A_DF_LP1,currentPositionEst) * 0.2 +
 		0.1;
 	//float m = 0.05;
-
+	
 	PosCol a = flow1(texcoord);
 	PosCol b = blob3(texcoord);
 
 	a.pos = mix(a.pos,b.pos,m);
 	a.col = mix(a.col,b.col,m);
+	
+
+
 	//
 	//a.pos = mix(a.pos,c.pos,m2);
 	//a.col = mix(a.col,c.col,m2);

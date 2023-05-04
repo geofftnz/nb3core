@@ -64,20 +64,21 @@ namespace nb3.Player.Analysis.Filter
             float current = 0f;
 
             // calculate the overall signal level
-            for (int i = freqStart; i < freqStart + freqCount; i++)
+            //for (int i = freqStart; i < freqStart + freqCount; i++)
+            //{
+            //    current += frame.Spectrum2DB[i];
+            //}
+            //current /= freqCount;
+
+            for (int i = 0; i < 8; i++)
             {
                 current += frame.Spectrum2DB[i];
             }
-            current /= freqCount;
-            //for (int i = 0; i < 16; i++)
-            //{
-            //    current += frame.Spectrum2DB[i];
-            //}
-            //for (int i = 128; i < 256; i++)
-            //{
-            //    current += frame.Spectrum2DB[i];
-            //}
-            //current /= 16 + 128;
+            for (int i = 128; i < 256; i++)
+            {
+                current += frame.Spectrum2DB[i];
+            }
+            current /= 8 + 128;
 
             //current = MathExt.Interpolate(current, blend, 0.5f);
 

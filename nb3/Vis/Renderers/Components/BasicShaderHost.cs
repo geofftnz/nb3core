@@ -37,6 +37,8 @@ namespace nb3.Vis.Renderers.Components
                 if (frameData != null && sp != null)
                 {
                     sp
+                    .SetUniform("time", (float)frameData.Time)
+                    .SetUniform("aspectRatio", AspectRatio)
                     .SetUniform("spectrumTex", 0)
                     .SetUniform("spectrum2Tex", 1)
                     .SetUniform("audioDataTex", 2)
@@ -47,12 +49,14 @@ namespace nb3.Vis.Renderers.Components
                     .SetUniform("currentPositionEst", frameData.GlobalTextures.EstimatedSamplePositionRelative);
                 }
             };
+
         }
 
         public override void Render(IFrameRenderData renderData, IFrameBufferTarget target)
         {
             base.Render(renderData, target);
         }
+
 
     }
 }

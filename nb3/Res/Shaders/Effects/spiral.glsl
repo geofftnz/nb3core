@@ -9,6 +9,7 @@ uniform sampler2D spectrum2Tex;
 uniform sampler2D audioDataTex;
 uniform float currentPosition;
 uniform float currentPositionEst;
+uniform float aspectRatio;
 
 #include "Common/gamma.glsl";
 
@@ -112,7 +113,7 @@ float blur     = .05;
 // credit for spiral: windytan [oona räisänen] https://www.windytan.com/2021/11/spiral-spectrograms-and-intonation.html 
 void main() {
     vec2  uv     = texcoord;
-    float aspect = 1.4;  // TODO: pass aspect
+    float aspect = aspectRatio;  // TODO: pass aspect
     
     vec2 uvcorrected = uv - vec2(0.5, 0.5);
     uvcorrected.x   *= aspect;
