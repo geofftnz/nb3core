@@ -153,10 +153,10 @@ namespace nb3.Vis
             switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player));
             switcher.Add(new Renderers.BasicShaderRenderer());
             switcher.Add(new Renderers.BasicShaderRenderer("effects/spiral.glsl|effect"));
-            switcher.Add(new Renderers.ParticleRenderer());
+            switcher.Add(new Renderers.ParticleRenderer("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl"));
 
             var graph = new ComponentGraph();
-            graph.Add(new ParticleNode() { Name = "particles" });
+            graph.Add(new ParticleNode("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl") { Name = "particles" });
             graph.Add(new ScreenOutputNode() { Name = "output" }); 
             graph.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "output", Port = "tex" });
 
@@ -164,13 +164,23 @@ namespace nb3.Vis
 
 
             var graph2 = new ComponentGraph();
-            graph2.Add(new ParticleNode() { Name = "particles"});
+            graph2.Add(new ParticleNode("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl") { Name = "particles"});
             graph2.Add(new OperatorNode("effects/kaleidoscope.frag") { Name = "kaleidoscope" });
             graph2.Add(new ScreenOutputNode() { Name = "output" });
             graph2.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "kaleidoscope", Port = "tex" });
             graph2.AddEdge(new NodePortReference() { Node = "kaleidoscope", Port = "tex" }, new NodePortReference() { Node = "output", Port = "tex" });
 
             switcher.Add(graph2);
+
+            var graph3 = new ComponentGraph();
+            graph3.Add(new ParticleNode("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/flow_operator.frag.glsl") { Name = "particles" });
+            graph3.Add(new OperatorNode("effects/kaleidoscope.frag") { Name = "kaleidoscope" });
+            graph3.Add(new ScreenOutputNode() { Name = "output" });
+            graph3.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "kaleidoscope", Port = "tex" });
+            graph3.AddEdge(new NodePortReference() { Node = "kaleidoscope", Port = "tex" }, new NodePortReference() { Node = "output", Port = "tex" });
+
+            switcher.Add(graph3);
+
 
             //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }

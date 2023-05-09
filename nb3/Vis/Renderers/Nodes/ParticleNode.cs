@@ -12,9 +12,9 @@ namespace nb3.Vis.Renderers.Nodes
 {
     public class ParticleNode : RenderGraphNodeBase
     {
-        public ParticleNode() : base(false, SizeInheritance.Inherit)
+        public ParticleNode(string renderVertex, string renderFragment, string operatorVertex, string operatorFragment) : base(false, SizeInheritance.Inherit)
         {
-            ChildComponent = new ParticleRenderer();
+            ChildComponent = new ParticleRenderer(renderVertex, renderFragment, operatorVertex, operatorFragment);
             SetOutput(0, new TextureSlotParam(TextureTarget.Texture2D, PixelInternalFormat.Rgba16f, PixelFormat.Rgba, PixelType.HalfFloat, false,
                 TextureParameter.Create(TextureParameterName.TextureMagFilter, TextureMagFilter.Linear),
                 TextureParameter.Create(TextureParameterName.TextureMinFilter, TextureMinFilter.Linear),

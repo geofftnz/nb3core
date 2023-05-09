@@ -9,8 +9,7 @@ namespace nb3.Vis.Renderers.Components
 {
     public class ParticleOperator : OperatorComponentBase
     {
-
-        public ParticleOperator() : base("particles/operator.vert.glsl", "particles/operator.frag.glsl")
+        public ParticleOperator(string vertex, string fragment) : base(vertex, fragment) 
         {
 
         }

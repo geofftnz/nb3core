@@ -29,7 +29,8 @@ namespace nb3.Vis.Renderers
 
         private float deltaTime = 0f;
 
-        public ParticleRenderer()
+        // "Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl"
+        public ParticleRenderer(string renderVertex, string renderFragment, string operatorVertex, string operatorFragment)
         {
             // create the model, which contains the textures that represent the particles.
             components.Add(model = new DefaultParticleModel(particleArrayWidth, particleArrayHeight));
@@ -47,7 +48,7 @@ namespace nb3.Vis.Renderers
             });
 
             // Add operator(s) to renderTarget. The operators write to the render target to alter the particles.
-            renderTarget.Add(operator1 = new ParticleOperator()
+            renderTarget.Add(operator1 = new ParticleOperator(operatorVertex, operatorFragment)
             {
                 IsFinalOutput = true,
                 TextureBinds = (fd) =>
@@ -81,8 +82,8 @@ namespace nb3.Vis.Renderers
                 }
             });
 
-            // create the renderer, which renders GL_POINTS using vertices that point to texels in the model textures.
-            components.Add(renderer = new ColourParticleRenderer("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", particleArrayWidth, particleArrayHeight)
+            // create the renderer, which renders GL_POINTS using vertices that point to texels in the model textures.            
+            components.Add(renderer = new ColourParticleRenderer(renderVertex, renderFragment, particleArrayWidth, particleArrayHeight)
             {
                 DrawOrder = 2,
                 IsFinalOutput = true,
