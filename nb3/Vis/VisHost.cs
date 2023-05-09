@@ -167,11 +167,10 @@ namespace nb3.Vis
             graph2.Add(new ParticleNode() { Name = "particles"});
             graph2.Add(new OperatorNode("effects/kaleidoscope.frag") { Name = "kaleidoscope" });
             graph2.Add(new ScreenOutputNode() { Name = "output" });
-            graph2.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "kaleidoscope", Port = "tex0" });
+            graph2.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "kaleidoscope", Port = "tex" });
             graph2.AddEdge(new NodePortReference() { Node = "kaleidoscope", Port = "tex" }, new NodePortReference() { Node = "output", Port = "tex" });
 
             switcher.Add(graph2);
-
 
             //Thread.CurrentThread.Priority = ThreadPriority.AboveNormal;
         }

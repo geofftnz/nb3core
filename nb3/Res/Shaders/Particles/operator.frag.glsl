@@ -420,7 +420,7 @@ PosCol blob2(vec2 coord)
 
 float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float freq)
 {
-	float df = getAudioDataSample(audioDataTex,5. + markerIndex * 2.,time);  // freq+level pairs starting at index 5
+	float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);  // freq+level pairs starting at index 5
 	float da = max(0.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)-0.05);
 
 	return (1.0 - smoothstep(abs(freq - df),0.0,0.002)) * da*da*200.0;	
@@ -500,8 +500,9 @@ PosCol blob3(vec2 coord)
 	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(2,currentPositionEst,freq);
 	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(3,currentPositionEst,freq);
 	pcol += getFreqColour3(freq) * getMultiPeakFilterMarkerIntensity(4,currentPositionEst,freq);
+	pcol *= 0.2;
 
-	col = vec4(vec3(0.),0.2);
+	col = vec4(vec3(0.),0.1);
 	col.rgb += vec3(1.0,0.2,0.05) * bd*bd * 0.4;
 	col.rgb += vec3(0.05,0.2,1.0) * hh*hh * 0.4;
 	col.rgb += pcol;
@@ -562,7 +563,7 @@ PosCol flow1(vec2 coord)
 
 	a*= 0.5;
 
-	float t = time * 0.02;
+	float t = time * 0.01;
 	v.x += (snoise(vec4(pv,0.+t)))*a;
 	v.y += (snoise(vec4(pv,1.+t)))*a;
 	v.z += (snoise(vec4(pv,2.+t)))*a;
@@ -578,10 +579,10 @@ PosCol flow1(vec2 coord)
 	v.y += (snoise(vec4(pv,1.+t)))*a;
 	v.z += (snoise(vec4(pv,2.+t)))*a;
 
-	//pv *= 2.; a*= .5;
-	//v.x += (snoise(vec4(pv,0.+t)))*a;
-	//v.y += (snoise(vec4(pv,1.+t)))*a;
-	//v.z += (snoise(vec4(pv,2.+t)))*a;
+	pv *= 2.; a*= .5;
+	v.x += (snoise(vec4(pv,0.+t)))*a;
+	v.y += (snoise(vec4(pv,1.+t)))*a;
+	v.z += (snoise(vec4(pv,2.+t)))*a;
 
 	//pv *= 2.; a*= .5;
 	//v.x += (snoise(vec4(pv,0.+t)))*a;
@@ -630,7 +631,7 @@ void main(void)
 		getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst) * 0.1 +
 		getAudioDataSample(audioDataTex,A_DF_LP1,currentPositionEst) * 0.2 +
 		0.1;
-	//float m = 0.05;
+	m = 0.1;
 	
 	PosCol a = flow1(texcoord);
 	PosCol b = blob3(texcoord);

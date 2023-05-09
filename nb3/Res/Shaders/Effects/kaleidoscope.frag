@@ -6,6 +6,20 @@ layout (location = 0) out vec4 out_Col;
 uniform float time;
 uniform float aspectRatio;
 uniform sampler2D input0Tex;
+uniform sampler2D spectrumTex;
+uniform sampler2D audioDataTex;
+uniform float currentPosition;
+uniform float currentPositionEst;
+
+#include "Common/filterParametersRuntime.glsl"
+
+
+#define DATARES 256
+float getAudioDataSample(float index, float time)
+{
+	return texture2D(audioDataTex,vec2((index+0.5)/DATARES,time)).r;
+}
+
 
 mat2 rot(float a)
 {
@@ -25,15 +39,20 @@ void main(void)
 	int s = 6;
 	mat2 r = rot(3.1415927 * 2. / float(s));
 
-	U *= rot(time * -0.05);
+	float t = time;
+	t += mod(getAudioDataSample(A_BD_counter,currentPositionEst) * 64.,1.0)*8.;
+
+	U *= rot(t * -0.05);
 	U = length(U) * cos( abs( mod( atan(U.y,U.x), 1.05) - .525 ) - .525  + vec2(0,11) );
-	U *= rot(time * 0.1);
+	U *= rot(t * 0.1);
 
 	for (int i=0;i<s;i++)
 	{
 		out_Col += texture2D(input0Tex,mod(U*0.5+0.5,1.0)) * 0.16;
 		U = U * r;
 	}
+
+	//out_Col.r += mod(getAudioDataSample(A_BD_counter,currentPositionEst) * 64.,1.0);
 
 
 	out_Col.a = 1.;	

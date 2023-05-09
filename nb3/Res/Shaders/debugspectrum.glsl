@@ -222,13 +222,14 @@ uniform float currentPosition;
 uniform float currentPositionEst;
 
 #include "Common/gamma.glsl";
+#include "Common/filterParametersRuntime.glsl"
 #include ".|common";
 #include ".|spectrum_common";
 
 float getMultiPeakFilterMarkerIntensity(float markerIndex, float time, float freq)
 {
-	float df = getAudioDataSample(audioDataTex,5. + markerIndex * 2.,time);  // freq+level pairs starting at index 5
-	float da = min(1.0,getAudioDataSample(audioDataTex,6. + markerIndex * 2.,time)*10.0);
+	float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);  // freq+level pairs starting at index 5
+	float da = min(1.0,getAudioDataSample(audioDataTex,A_MPFF_Freq1 + 1 + markerIndex * 2.,time)*10.0);
 
 	return (1.0 - smoothstep(abs(freq - df),0.0,0.00075)) * da ;
 }
@@ -409,6 +410,7 @@ uniform sampler2D audioDataTex;
 uniform float currentPosition;
 uniform float currentPositionEst;
 
+#include "Common/filterParametersRuntime.glsl"
 #include "Common/gamma.glsl";
 #include ".|common";
 #include ".|spectrum_common";
@@ -429,8 +431,8 @@ float getCurrentAudioDataSample(float index)
 
 float getMultiPeakFilterMarkerIntensity(float markerIndex, vec2 t)
 {
-	float df = getCurrentAudioDataSample(5. + markerIndex * 2.);  // freq+level pairs starting at index 5
-	float da = min(1.0,getCurrentAudioDataSample(6. + markerIndex * 2.)*10.0);
+	float df = getCurrentAudioDataSample(A_MPFF_Freq1 + markerIndex * 2.);  // freq+level pairs starting at index 5
+	float da = min(1.0,getCurrentAudioDataSample(A_MPFF_Freq1 + 1 + markerIndex * 2.)*10.0);
 
 	return ((1.0 - clamp(abs(df - t.y) * 300.0,0.0,1.0))*da*da * (1.0 - smoothstep(0.0,0.1,1.0-t.x)));
 }

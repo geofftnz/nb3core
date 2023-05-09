@@ -56,7 +56,7 @@ namespace nb3.Vis.Renderers.Nodes
                 }
             };
 
-            _input.Add("tex0", new GraphNodeTexturePort()
+            _input.Add("tex", new GraphNodeTexturePort()
             {
                 Name = "tex",
                 Target = TextureTarget.Texture2D,
@@ -66,7 +66,7 @@ namespace nb3.Vis.Renderers.Nodes
 
         protected override void AssignInputs(IFrameRenderData frameData)
         {
-            (_input["tex0"] as GraphNodeTexturePort).InternalValue.Bind(TextureUnit.Texture3);
+            (_input["tex"] as GraphNodeTexturePort).InternalValue.Bind(TextureUnit.Texture3);
         }
 
         protected override void AssignOutputs(IFrameRenderData frameData)

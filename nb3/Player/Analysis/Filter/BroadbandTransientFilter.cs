@@ -21,16 +21,18 @@ namespace nb3.Player.Analysis.Filter
     /// </summary>
     public class BroadbandTransientFilter : SpectrumFilterBase, ISpectrumFilter
     {
-        private const int NUMOUTPUTS = 6;
+        private const int NUMOUTPUTS = 8;
 
         public enum Outputs
         {
             Current,
             Convolution,
             Peaks,
+            Gain,
             GainControl,
             Edge,
-            Level
+            Level,
+            Counter
         }
 
         public int OutputOffset { get; set; }
@@ -39,7 +41,9 @@ namespace nb3.Player.Analysis.Filter
         private float[] output = new float[NUMOUTPUTS];
 
         public int FreqStart { get; private set; }
-        public int FreqCount { get; private set; }
+        public int FreqEnd { get; private set; }
+        public int FreqCount => FreqStart + FreqEnd;
+
         public float Threshold { get; set; } = 0.05f;  // lowest value able to trigger a rising edge
         public float TriggerHigh { get => hyst.RisingThreshold; set => hyst.RisingThreshold = value; }
         public float TriggerLow { get => hyst.FallingThreshold; set => hyst.FallingThreshold = value; }
@@ -80,15 +84,18 @@ namespace nb3.Player.Analysis.Filter
         private HysteresisPulse hyst;
         private PeakExtract peak;
         private GainControl agc;
+        private StepwiseAccumulator accum;
 
         Func<FilterParameters, int, float> Spectrum;
 
 
-        public BroadbandTransientFilter(string name, Func<FilterParameters, int, float> spectrum, int freq_start, int freq_count, IList<float> convolutionCoefficients) : base(name, "input", "convolution", "peaks", "agc", "edge", "level")
+        public BroadbandTransientFilter(string name, Func<FilterParameters, int, float> spectrum, int freq_start, int freq_end, IList<float> convolutionCoefficients) : base(name, "input", "convolution", "peaks", "gain", "agc", "edge", "level","counter")
         {
             Spectrum = spectrum;
             FreqStart = freq_start;
-            FreqCount = freq_count;
+            FreqEnd = freq_end;
+
+            if (freq_end <= freq_start) throw new InvalidOperationException("freq_end must be larger than freq_start");
 
             /*
             if (FreqStart > Globals.SPECTRUM2RES - 2)
@@ -103,13 +110,14 @@ namespace nb3.Player.Analysis.Filter
             conv = new Convolution(convolutionCoefficients.ToArray());
             hyst = new HysteresisPulse(0.5f, 0.4f);
             peak = new PeakExtract(0.99f, 1.0f);
-            agc = new GainControl(1.5f, 0.0f, 0.99f);
+            agc = new GainControl(1.0f, 0.0f, 0.999f);
+            accum = new StepwiseAccumulator(1f, 256);
         }
 
         public float[] GetValues(FilterParameters frame)
         {
             float current = 0f;
-            for (int i = FreqStart; i < FreqStart + FreqCount; i++)
+            for (int i = FreqStart; i < FreqEnd; i++)
             {
                 current += Spectrum(frame, i);
             }
@@ -126,6 +134,7 @@ namespace nb3.Player.Analysis.Filter
             output[(int)Outputs.Peaks] = current;
 
             current = agc.Get(current);
+            output [(int)Outputs.Gain] = agc.Gain * 0.1f;
             output[(int)Outputs.GainControl] = current;
 
             float pulse = hyst.Get(current);
@@ -145,6 +154,8 @@ namespace nb3.Player.Analysis.Filter
 
             output[(int)Outputs.Edge] = activation_rising_edge;
             output[(int)Outputs.Level] = activation_high;
+            output[(int)Outputs.Counter] = accum.Get(activation_rising_edge);
+
             activation_rising_edge = Math.Max(0f, activation_rising_edge - ActivationLinearDecay);
             activation_high = Math.Max(0f, activation_high - ActivationLinearDecay);
 

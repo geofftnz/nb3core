@@ -10,7 +10,7 @@ namespace nb3.Player.Analysis.Filter
 {
     public class BeatFinderFilter : SpectrumFilterBase, ISpectrumFilter
     {
-        private const int NUMOUTPUTS = 6;
+        private const int NUMOUTPUTS = 8;
         private const int BUFFERLEN = 2880 * 4;
 
         public enum FilterOutputs
@@ -20,7 +20,9 @@ namespace nb3.Player.Analysis.Filter
             Correlation,
             Out,
             Trigger,
-            Trigger4
+            Trigger4,
+            Accumulator,
+            Accumulator4
         }
         public int OutputOffset { get; set; }
         public int OutputSlotCount { get { return NUMOUTPUTS; } }
@@ -44,6 +46,8 @@ namespace nb3.Player.Analysis.Filter
         private HysteresisPulse hysteresis = new HysteresisPulse(0.6f, 0.4f);
         private RisingEdgeTimer edge1 = new RisingEdgeTimer();
         private RisingEdgeDividerTimer edge2 = new RisingEdgeDividerTimer(4);
+        private StepwiseAccumulator accumulator1 = new StepwiseAccumulator(1f, 256);
+        private StepwiseAccumulator accumulator4 = new StepwiseAccumulator(1f, 256);
 
         private const int OVERSAMPLE = 8;  // amount to expand/oversample the signal before correlating
 
@@ -51,7 +55,7 @@ namespace nb3.Player.Analysis.Filter
         private int offset = initial_offset;
         private const int CORRELATIONWIDTH = 360 * OVERSAMPLE;
 
-        public BeatFinderFilter(string name = "BEAT1", int freq_start = 0, int freq_count = 128, float lowpass_coeff = 0.98f) : base(name, "cur", "bpm", "fit", "out","trig","trig4")
+        public BeatFinderFilter(string name = "BEAT1", int freq_start = 0, int freq_count = 128, float lowpass_coeff = 0.98f) : base(name, "cur", "bpm", "fit", "out", "trig", "trig4","acc1","acc4")
         {
             freqStart = freq_start;
             freqCount = freq_count;
@@ -126,7 +130,7 @@ namespace nb3.Player.Analysis.Filter
             var next = GetCorrelation(rbuffer, offset + rand.Next(21) - 10, CORRELATIONWIDTH);
             if (next.correlation > current_correlation)
             {
-                next_offset = (offset*7 + next.offset) / 8;
+                next_offset = (offset * 7 + next.offset) / 8;
             }
             if (next_offset < min) next_offset = initial_offset;
             if (next_offset > max) next_offset = initial_offset;
@@ -165,7 +169,8 @@ namespace nb3.Player.Analysis.Filter
             float h = hysteresis.Get(out2);
             output[(int)FilterOutputs.Trigger] = edge1.Get(h);
             output[(int)FilterOutputs.Trigger4] = edge2.Get(h);
-
+            output[(int)FilterOutputs.Accumulator] = accumulator1.Get(output[(int)FilterOutputs.Trigger]);
+            output[(int)FilterOutputs.Accumulator4] = accumulator4.Get(output[(int)FilterOutputs.Trigger4]);
 
             return output;
         }

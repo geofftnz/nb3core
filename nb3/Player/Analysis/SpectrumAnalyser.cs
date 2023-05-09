@@ -43,10 +43,10 @@ namespace nb3.Player.Analysis
             AddFilter(new KickDrumFilter2("KD2B", 0, 8));
             AddFilter(new DistributionFilter("DF"));
             AddFilter(new KickDrumFilter("KD1"));
-            AddFilter(new BroadbandTransientFilter("HH1", (f, i) => f.Spectrum2[i], 96, 128, MathExt.Flat(2)) { TriggerHigh = 0.5f, TriggerLow = 0.45f, MaxGain = 4f });  // 256 spectrum
-            AddFilter(new BroadbandTransientFilter("HH2", (f, i) => f.Spectrum2[i], 96, 128, MathExt.Flat(2)) { TriggerHigh = 0.8f, TriggerLow = 0.75f, MaxGain = 4f });  // 256 spectrum
-            AddFilter(new BroadbandTransientFilter("BD", (f, i) => f.Spectrum[i], 0, 12, MathExt.Flat(4)) { TriggerHigh = 0.5f, TriggerLow = 0.45f, MaxGain = 6f });  // 256 spectrum
-            AddFilter(new BroadbandTransientFilter("SN", (f, i) => f.Spectrum2[i], 32, 96, MathExt.LinearDecay(16)) { TriggerHigh = 0.8f, TriggerLow = 0.75f, MaxGain = 8f });  // 256 spectrum
+            AddFilter(new BroadbandTransientFilter("HH1", (f, i) => f.Spectrum2[i], 96, 224, MathExt.Flat(2)) { TriggerHigh = 0.5f, TriggerLow = 0.45f, MaxGain = 4f });  // 256 spectrum
+            AddFilter(new BroadbandTransientFilter("HH2", (f, i) => f.Spectrum2[i], 96, 224, MathExt.Flat(2)) { TriggerHigh = 0.8f, TriggerLow = 0.75f, MaxGain = 4f });  // 256 spectrum
+            AddFilter(new BroadbandTransientFilter("BD", (f, i) => f.Spectrum[i], 4, 16, MathExt.Flat(4)) { TriggerHigh = 0.5f, TriggerLow = 0.45f, MaxGain = 6f, AGCDecay = 0.999f });  // 1024 spectrum
+            AddFilter(new BroadbandTransientFilter("SN", (f, i) => f.Spectrum2[i], 64, 224, MathExt.LinearDecay(16)) { TriggerHigh = 0.8f, TriggerLow = 0.75f, MaxGain = 8f, AGCDecay = 0.999f });  // 256 spectrum
 
 
             //AddFilter(new BroadbandTransientFilter("HH2", (f, i) => f.Spectrum2DB[i], 128, 96, Enumerable.Range(0, 16).Select(i => i < 8 ? 0.05f : -0.02f).ToArray()) { TriggerHigh = 0.4f, TriggerLow = 0.35f });  // 256 spectrum
