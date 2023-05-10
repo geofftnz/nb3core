@@ -219,14 +219,14 @@ PosCol flow1(vec2 coord)
 	//float a = 0.01 + complexity * 0.0001 + hash13(vec3(coord,0.)) * 0.00001;
 	//a*= 0.5;
 
-	vec3 pv = p0 * 1.1;
+	vec3 pv = p0 * (0.5 + complexity * 4.);
 	float a = 0.01;
 
-	float octaves = min(5.0, 0.5 + complexity * 6.);
+	float octaves = min(5.0, 1.5 + complexity * 6.);
 	float last_octave_scale = fract(octaves);
 	octaves = floor(octaves);
 
-	float t = time * 0.01;
+	float t = time * 0.1;
 
 	// whole octaves of noise
 	float octave = 1.;
@@ -247,8 +247,9 @@ PosCol flow1(vec2 coord)
 	v.z += (snoise(vec4(pv,2.+t)))*a;
 
 
-	//float distToSphere = length(p0) - 0.4;
-	//v += -normalize(p0) * distToSphere * (0.5);
+	// attract to sphere
+	float distToSphere = length(p0) - 0.4;
+	v += -normalize(p0) * distToSphere * 0.2;
 
 
 	// move
