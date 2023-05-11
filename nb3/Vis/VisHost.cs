@@ -24,6 +24,7 @@ using OpenTK.Windowing.GraphicsLibraryFramework;
 using NLog;
 using OpenTKExtensions.Framework.Graph;
 using nb3.Vis.Renderers.Nodes;
+using System.Runtime.CompilerServices;
 
 namespace nb3.Vis
 {
@@ -37,7 +38,7 @@ namespace nb3.Vis
         private KeyboardActionManager keyboardActions;
         private ComponentSwitcher switcher;
 
-        private TextBlock title = new TextBlock("t0", "NeuralBeat3 ©2016-2020 Geoff Thornburrow", new Vector3(0.0f, 0.05f, 0f), 0.0005f, new Vector4(1f, 0.8f, 0.2f, 1f));
+        private TextBlock title = new TextBlock("t0", "NeuralBeat3 ©2016-2023 Geoff Thornburrow", new Vector3(0.0f, 0.05f, 0f), 0.0005f, new Vector4(1f, 0.8f, 0.2f, 1f));
         private Matrix4 overlayProjection;
         private Matrix4 overlayModelview;
 
@@ -51,7 +52,7 @@ namespace nb3.Vis
         private object threadLock = new object();
 
 
-        private ConcurrentQueue<AudioAnalysisSample> sampleQueue = new ConcurrentQueue<AudioAnalysisSample>();
+        private ConcurrentQueue<StrongBox<AudioAnalysisSample>> sampleQueue = new();
 
         private float[] tempSpectrum = new float[Globals.SPECTRUMRES]; // this will be coming in from the analysis side.
 
@@ -81,18 +82,7 @@ namespace nb3.Vis
             }
         }
 
-        public ConcurrentQueue<AudioAnalysisSample> SampleQueue
-        {
-            get
-            {
-                return sampleQueue;
-            }
-
-            set
-            {
-                sampleQueue = value;
-            }
-        }
+        public ConcurrentQueue<StrongBox<AudioAnalysisSample>> SampleQueue => sampleQueue;
 
         private int lastTracksPlayed = 0;
 
@@ -157,14 +147,14 @@ namespace nb3.Vis
 
             var graph = new ComponentGraph();
             graph.Add(new ParticleNode("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl") { Name = "particles" });
-            graph.Add(new ScreenOutputNode() { Name = "output" }); 
+            graph.Add(new ScreenOutputNode() { Name = "output" });
             graph.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "output", Port = "tex" });
 
             switcher.Add(graph);
 
 
             var graph2 = new ComponentGraph();
-            graph2.Add(new ParticleNode("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl") { Name = "particles"});
+            graph2.Add(new ParticleNode("Particles/particles_col.vert.glsl", "Particles/particles_col.frag.glsl", "particles/operator.vert.glsl", "particles/operator.frag.glsl") { Name = "particles" });
             graph2.Add(new OperatorNode("effects/kaleidoscope.frag") { Name = "kaleidoscope" });
             graph2.Add(new ScreenOutputNode() { Name = "output" });
             graph2.AddEdge(new NodePortReference() { Node = "particles", Port = "tex" }, new NodePortReference() { Node = "kaleidoscope", Port = "tex" });
@@ -305,16 +295,24 @@ namespace nb3.Vis
                 lastTracksPlayed = Player.TracksPlayed;
             }
 
-            AudioAnalysisSample sample;
+            StrongBox<AudioAnalysisSample> sampleBox;
 
-            while (SampleQueue.TryDequeue(out sample))
+            int i = 0;
+            while (SampleQueue.TryDequeue(out sampleBox))
             {
-                globalTextures.PushSample(sample);
+                globalTextures.PushSample(sampleBox.Value);
+                sampleBox.Value = null;
+                i++;
+                if (i > 30)
+                {
+                    LogManager.GetCurrentClassLogger().Warn("SampleQueue over {0} items", i);
+                    break;
+                }
             }
 
             components.Update(frameData);
 
-            Thread.Sleep(0);
+            //Thread.Sleep(0);
             //}
         }
 
@@ -335,9 +333,10 @@ namespace nb3.Vis
             //text.Modelview = overlayModelview;
         }
 
+        // this will run on NAudio's playback thread.
         public void AddSample(AudioAnalysisSample sample)
         {
-            SampleQueue.Enqueue(sample);
+            SampleQueue.Enqueue(new StrongBox<AudioAnalysisSample>(sample));
         }
 
         //private void OnPlayerStart(object sender, Player.PlayerStartEventArgs e)

@@ -22,6 +22,8 @@ namespace nb3.Player.Analysis
     /// 
     /// Target is some sort of hybrid spectrum calculated from overlaid FFTs of different sizes, in order to get good time
     /// resolution for high frequencies and good frequency resolution for low frequencies.
+    /// 
+    /// Note: This executes on NAudio's playback thread.
     /// </summary>
     public class SpectrumGenerator : ISampleProvider
     {

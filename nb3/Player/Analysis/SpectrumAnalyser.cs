@@ -37,7 +37,7 @@ namespace nb3.Player.Analysis
 
             AddFilter(new PeakFrequencyFilter("PFF", 12, Globals.SPECTRUMRES / 3 - 12));
             //AddFilter(new MultiPeakFrequencyFilter("MPFF", 12, Globals.SPECTRUMRES / 3 - 12));
-            AddFilter(new MultiPeakFrequencyFilter("MPFF", 12, Globals.SPECTRUMRES - 20));
+            AddFilter(new MultiPeakFrequencyFilter("MPFF", 0, Globals.SPECTRUMRES - 20));  // 0 was 12
             AddFilter(new KickDrumFilter3("KD3", 0, 6));
             AddFilter(new KickDrumFilter2("KD2A", 0, 4));
             AddFilter(new KickDrumFilter2("KD2B", 0, 8));

@@ -58,7 +58,8 @@ void main(void)
 	//out_Col *= 0.0;
 
 	// mix in original
-	//out_Col += texture2D(input0Tex,texcoord);
+	//out_Col = texture2D(input0Tex,texcoord);
+	//out_Col += texture2D(input0Tex,texcoord)*0.5;
 
 
 	out_Col.a = 1.;	

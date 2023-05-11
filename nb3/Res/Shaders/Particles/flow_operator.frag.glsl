@@ -6,6 +6,7 @@ layout (location = 1) out vec4 out_Col;
 
 uniform float time;
 uniform float deltaTime;
+uniform float aspectRatio;
 uniform sampler2D spectrumTex;
 uniform sampler2D audioDataTex;
 uniform sampler2D particlePosTex;
@@ -84,6 +85,7 @@ vec4 getSample(sampler2D spectrum, vec2 t)
 
 vec3 getFreqColour(float f)
 {
+
 	// bass purple - blue
 	if (f < 0.02) return mix(vec3(0.2,0.0,1.0),vec3(0.0,0.0,1.0),f / 0.02);
 
@@ -156,11 +158,11 @@ struct PosCol
 };
 
 
-PosCol flow1(vec2 coord)
+// ============================================================================================
+PosCol flow1(vec2 coord, float detail)
 {
 	vec3 p = vec3(0.0);
-	//float s = 0.5 + hash13(vec3(coord,0.)) * 3.;
-	float s = 1.5;
+	float s = 1.5;	// particle size
 	vec4 col = vec4(1.0,0.1,0.05,0.1);
 
 	// get last position & col
@@ -170,17 +172,19 @@ PosCol flow1(vec2 coord)
 	// get last-1 position
 	vec3 pminus1 = texture(particlePosPrevTex,coord).rgb;
 	
+	// calculate velocity, reset to zero if speed too high
 	vec3 v = p0 - pminus1;
 	if (dot(v,v)>1.) v = vec3(0.);
 
 	float beat_counter1 = getAudioDataSample(audioDataTex,A_BEAT1_acc1,currentPositionEst);
 	float beat_counter4 = getAudioDataSample(audioDataTex,A_BEAT1_acc4,currentPositionEst);
 	float beat_counter_bd = getAudioDataSample(audioDataTex,A_BD_counter,currentPositionEst);
+	float blur = getAudioDataSample(audioDataTex,A_BD_edge,currentPositionEst);
 	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
-
 
 	// base colour, will cycle
 	vec3 base_col = hsv2rgb(vec3(mod(beat_counter4 * 8.,1.),0.8,0.8));
+	base_col = mix(base_col,vec3(0.05,0.1,0.8),0.9);
 	
 	// determine if we need to init position+velocity
 	if ((dot(p0,p0) == 0. && dot(pminus1,pminus1) == 0.) || (hash13(p0*17. + vec3(time)) > 0.995))
@@ -198,31 +202,17 @@ PosCol flow1(vec2 coord)
 	else
 	{
 		// fade in alpha, clamp to max
-		col0.a = min(0.1,col0.a + 0.0002);
+		col0.a = min(0.1,col0.a + 0.002);
 	}
-
-	/*
-	float sn = getAudioDataSample(audioDataTex,A_SN_level,currentPositionEst);
-	float hh = getAudioDataSample(audioDataTex,A_HH1_level,currentPositionEst);
-	float bd = getAudioDataSample(audioDataTex,A_BD_level,currentPositionEst);
-	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
-	*/
-
-
 
 	// decay motion
 	v *= 0.5;
 	//p0 *= 0.99;
 
-	// add noise1
-	//vec3 pv = p0 * 3.7 * (complexity + .3);
-	//float a = 0.01 + complexity * 0.0001 + hash13(vec3(coord,0.)) * 0.00001;
-	//a*= 0.5;
-
-	vec3 pv = p0 * (0.5 + complexity * 4.);
+	vec3 pv = p0 * detail;
 	float a = 0.01;
 
-	float octaves = min(5.0, 1.5 + complexity * 6.);
+	float octaves = min(3.0, 1.5 + complexity * 2.);
 	float last_octave_scale = fract(octaves);
 	octaves = floor(octaves);
 
@@ -248,16 +238,155 @@ PosCol flow1(vec2 coord)
 
 
 	// attract to sphere
-	float distToSphere = length(p0) - 0.4;
-	v += -normalize(p0) * distToSphere * 0.2;
+	//float distToSphere = length(p0) - 0.4;
+	//v += -normalize(p0) * distToSphere * 0.2;
+
+	// attract to centre
+	v += -normalize(p0) * 0.005;
 
 
 	// move
-	p = p0 + v * (1.+.1*hash13(vec3(coord,1.)));
+	p = p0 + v;
+	//p = p0 + v * (1.+.5*hash13(vec3(coord,1.))); // noise in velocity
+
+	blur = pow(blur,5.) * 0.002;
+	p.x += (hash13(vec3(coord,time * 17.)) - .5) * blur;
+	p.y += (hash13(vec3(coord,time * 37.)) - .5) * blur;
+	p.z += (hash13(vec3(coord,time * 57.)) - .5) * blur;
+
 	col = col0;
 
-	//col.rgb = normalize(p.xyz) * 0.9 + vec3(0.1);
-	//col.rgb = normalize(v) * 0.5 + 0.5;
+	return PosCol(vec4(p,s),col);
+}
+
+
+// ============================================================================================
+
+vec3 getMPFFColour(float time, float freq)
+{
+	vec3 col = vec3(0.);
+
+	for (float markerIndex = 0.; markerIndex < 5.; markerIndex += 1.)
+	{
+		float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);
+		float da = max(0.0,getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time)-0.05);
+
+		float a = (1.0 - smoothstep(abs(freq - df),0.0,0.005)) * pow(da,3.)*400.0;
+		//a = smoothstep(a,0.2,0.8);
+		//col += getFreqColour(df) * a * 0.2;
+		col += hsv2rgb(vec3(df*3.,0.95,0.9)) * a;
+	}
+
+	return col ;	
+}
+
+PosCol blobs1(vec2 coord, float detail)
+{
+	vec3 p = vec3(0.0);
+	float s = 1.5;	// particle size
+	vec4 col = vec4(1.0,0.1,0.05,0.1);
+
+	// select filter we're following
+	float currentfilter = floor(coord.x * 5.0) * 2.;  // pairs of freq,level
+
+	float filterfreq = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + currentfilter,currentPositionEst);
+	float filterlevel = getAudioDataSample(audioDataTex,A_MPFF_Level1 + currentfilter,currentPositionEst);
+	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
+
+	// remap frequency range
+	//filterfreq = fscale(filterfreq*0.7);
+
+
+	// get last position & col
+	vec3 p0 = texture(particlePosTex,coord).rgb;
+	vec4 col0 = texture(particleColTex,coord);
+	
+	// get last-1 position
+	vec3 pminus1 = texture(particlePosPrevTex,coord).rgb;
+	
+	// calculate velocity, reset to zero if speed too high
+	vec3 v = p0 - pminus1;
+	if (dot(v,v)>1.) v = vec3(0.);
+
+	// base colour, will cycle
+	//vec3 base_col = hsv2rgb(vec3(0.0,0.8,0.8));
+	//base_col = mix(base_col,vec3(0.05,0.1,0.8),0.9);
+	
+	// determine if we need to init position+velocity
+	if ((dot(p0,p0) == 0. && dot(pminus1,pminus1) == 0.) || (hash13(p0*17. + vec3(time)) > 0.98))
+	{
+		// random position
+		p0 = randomPos(coord,time);
+		if (dot(p0,p0) > 1.) p0 = randomPos(coord,time+1.);
+		if (dot(p0,p0) > 1.) p0 = randomPos(coord,time+2.);
+
+		v = vec3(0.);
+
+		//col0.rgb = base_col + normalize(p0.xyz) * 0.1;
+		//col0.a = 0.0;
+		col0 = vec4(0.0);
+
+	}
+	else
+	{
+		// fade in alpha, clamp to max
+		col0.a = min(0.1,col0.a + 0.002);
+	}
+
+	// decay motion
+	v *= 0.7;
+
+	// move towards centre
+	//p0 *= 0.999;
+
+	vec3 pv = p0 * detail;
+	float a = 0.05;
+
+	float octaves = min(3.0, 1.0 + complexity * 4.);
+	float last_octave_scale = fract(octaves);
+	octaves = floor(octaves);
+
+	float t = time * 0.17;
+
+	// whole octaves of noise
+	float octave = 1.;
+	for (; octave <= octaves; octave += 1.)
+	{
+		v.x += (snoise(vec4(pv,0.+t)))*a;
+		v.y += (snoise(vec4(pv,1.+t)))*a;
+		v.z += (snoise(vec4(pv,2.+t)))*a;
+		pv *= 2.0;
+		a *= 0.5;
+		t *= 1.05;
+	}
+	// final octave of noise
+	a *= last_octave_scale;
+	v.x += (snoise(vec4(pv,0.+t)))*a;
+	v.y += (snoise(vec4(pv,1.+t)))*a;
+	v.z += (snoise(vec4(pv,2.+t)))*a;
+
+
+	float spha = currentfilter / 5. * PI - time * .1;  // angle of sphere
+	float sphd = 0.0; //filterfreq * 5.;  // distance of sphere from centre
+	//float sphr = 0.1; //0.1 / (1.0 + 4. * pow(filterlevel,3.0)); //radius of sphere
+	//float sphr = 0.7 / (1.0 + 4. * pow(filterlevel,3.0)); //radius of sphere
+	float sphr = pow(filterfreq,0.5);
+	vec3 sph = vec3(cos(spha) * sphd, -sin(spha) * sphd, 0.);
+
+	// attract to sphere
+	//float distToSphere = length(p0 - sph) - sphr;
+	//v += -normalize(p0 - sph) * distToSphere * 0.01;
+
+	// move
+	p = p0 + v * 0.2;
+	p.z = 0.;
+
+	//col = mix(col,vec4(getFreqColour(filterfreq),4. * pow(filterlevel,3.0)),0.5);
+	//col = col0;
+	//float f = mix(sphr,length(p),0.7);
+	//float f = sphr;
+	float f = fscale(length(p)*0.8);
+	col = mix(col0,vec4(getMPFFColour(currentPositionEst,f),1.),0.2);
 
 	return PosCol(vec4(p,s),col);
 }
@@ -265,9 +394,14 @@ PosCol flow1(vec2 coord)
 
 void main(void)
 {
+	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
+
+	float detail = 1. + complexity * 4.0;
+
 	PosCol a;
 
-	a = flow1(texcoord);
+	a = texcoord.y > 0.5 ? flow1(texcoord, detail) : blobs1(texcoord, detail * 0.8);
+	//a = blobs1(texcoord);
 
 	out_Pos = a.pos;
 	out_Col = a.col;

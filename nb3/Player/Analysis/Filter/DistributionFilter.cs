@@ -16,7 +16,7 @@ namespace nb3.Player.Analysis.Filter
 
         private float scale = 4f / (Globals.SPECTRUMRES * Globals.SPECTRUMRES);
 
-        public float Lowpass { get; set; } = 0.95f;
+        public float Lowpass { get; set; } = 0.99f;
 
         public DistributionFilter(string name) : base(name, "0", "LP1", "LP2", "LP3")
         {
