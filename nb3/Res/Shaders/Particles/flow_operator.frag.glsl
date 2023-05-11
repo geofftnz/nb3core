@@ -271,10 +271,12 @@ vec3 getMPFFColour(float time, float freq)
 		float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);
 		float da = max(0.0,getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time)-0.05);
 
-		float a = (1.0 - smoothstep(abs(freq - df),0.0,0.005)) * pow(da,3.)*400.0;
+		float a = (1.0 - smoothstep(abs(freq - df),0.0,0.0002)) * pow(da,5.)*2000.0;
+		a += (1.0 - smoothstep(abs(freq - df),0.0,0.002)) * pow(da,3.)*100.0;
 		//a = smoothstep(a,0.2,0.8);
-		//col += getFreqColour(df) * a * 0.2;
-		col += hsv2rgb(vec3(df*3.,0.95,0.9)) * a;
+		col += getFreqColour(df) * a;
+		//col += hsv2rgb(vec3(df*3.,0.95,0.9)) * a;
+		//col += vec3(0.4,0.1,1.0) * a;
 	}
 
 	return col ;	
@@ -334,13 +336,13 @@ PosCol blobs1(vec2 coord, float detail)
 	}
 
 	// decay motion
-	v *= 0.7;
+	v *= 0.2;
 
 	// move towards centre
 	//p0 *= 0.999;
 
 	vec3 pv = p0 * detail;
-	float a = 0.05;
+	float a = 0.03;
 
 	float octaves = min(3.0, 1.0 + complexity * 4.);
 	float last_octave_scale = fract(octaves);
@@ -374,12 +376,13 @@ PosCol blobs1(vec2 coord, float detail)
 	vec3 sph = vec3(cos(spha) * sphd, -sin(spha) * sphd, 0.);
 
 	// attract to sphere
-	//float distToSphere = length(p0 - sph) - sphr;
-	//v += -normalize(p0 - sph) * distToSphere * 0.01;
+	float distToSphere = length(p0 - sph) - sphr;
+	v += -normalize(p0 - sph) * distToSphere * 0.1;
+
 
 	// move
-	p = p0 + v * 0.2;
-	p.z = 0.;
+	p = p0 + v * 0.5;
+	//p.z = 0.;
 
 	//col = mix(col,vec4(getFreqColour(filterfreq),4. * pow(filterlevel,3.0)),0.5);
 	//col = col0;
@@ -396,7 +399,7 @@ void main(void)
 {
 	float complexity = getAudioDataSample(audioDataTex,A_DF_LP3,currentPositionEst);
 
-	float detail = 1. + complexity * 4.0;
+	float detail = 1.5 + complexity * 4.0;
 
 	PosCol a;
 

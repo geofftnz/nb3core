@@ -54,6 +54,18 @@ void main(void)
 		out_Col += texture2D(input0Tex,mod(U*0.5+0.5,1.0)) * 0.16;
 		U = U * r;
 	}
+
+	/*
+	// additional repitition
+	float a = 0.1;
+	//r = rot(3.1415927 * 2. / float(s * 4.));
+	for (int i=0;i<s*2;i++)
+	{
+		out_Col += texture2D(input0Tex,mod(U*0.5+0.5,1.0)) * a;
+		U = U * r;
+		U *= (sin(time * 0.4) * 0.2 + 1.1);
+		a *= 0.8;
+	}*/
 	
 	//out_Col *= 0.0;
 
