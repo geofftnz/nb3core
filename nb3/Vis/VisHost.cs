@@ -52,7 +52,10 @@ namespace nb3.Vis
         private object threadLock = new object();
 
 
-        private ConcurrentQueue<StrongBox<AudioAnalysisSample>> sampleQueue = new();
+        //private ConcurrentQueue<StrongBox<AudioAnalysisSample>> sampleQueue = new();
+        //public ConcurrentQueue<StrongBox<AudioAnalysisSample>> SampleQueue => sampleQueue;
+        private Queue<StrongBox<AudioAnalysisSample>> sampleQueue = new();
+        public Queue<StrongBox<AudioAnalysisSample>> SampleQueue => sampleQueue;
 
         private float[] tempSpectrum = new float[Globals.SPECTRUMRES]; // this will be coming in from the analysis side.
 
@@ -74,7 +77,7 @@ namespace nb3.Vis
 
                     if (_player != null)
                     {
-                        _player.SpectrumReady += (s, e) => { AddSample(e.Sample); };
+                        _player.SpectrumReady += (s, e) => { AddSample(e.Sample); };  // on naudio playback thread
                         //_player.PlayerStart += OnPlayerStart;
                     }
 
@@ -82,7 +85,6 @@ namespace nb3.Vis
             }
         }
 
-        public ConcurrentQueue<StrongBox<AudioAnalysisSample>> SampleQueue => sampleQueue;
 
         private int lastTracksPlayed = 0;
 
@@ -272,6 +274,15 @@ namespace nb3.Vis
             //}
         }
 
+        // this will run on NAudio's playback thread.
+        public void AddSample(AudioAnalysisSample sample)
+        {
+            lock (threadLock)
+            {
+                SampleQueue.Enqueue(new StrongBox<AudioAnalysisSample>(sample));
+            }
+        }
+
         private void VisHost_UpdateFrame(FrameEventArgs e)
         {
             //lock (this.threadLock)
@@ -298,18 +309,24 @@ namespace nb3.Vis
             StrongBox<AudioAnalysisSample> sampleBox;
 
             int i = 0;
-            while (SampleQueue.TryDequeue(out sampleBox))
+            lock (threadLock)
             {
-                globalTextures.PushSample(sampleBox.Value);
-                sampleBox.Value = null;
-                i++;
-                if (i > 30)
+                while (SampleQueue.TryDequeue(out sampleBox))
                 {
-                    LogManager.GetCurrentClassLogger().Warn("SampleQueue over {0} items", i);
-                    break;
+                    globalTextures.PushSample(sampleBox.Value);
+                    sampleBox.Value = null;
+                    i++;
+                    if (i > 30)
+                    {
+                        LogManager.GetCurrentClassLogger().Warn("SampleQueue over {0} items", i);
+                        break;
+                    }
+                    if (SampleQueue.Count == 0)
+                    {
+                        SampleQueue.Clear();
+                    }
                 }
             }
-
             components.Update(frameData);
 
             //Thread.Sleep(0);
@@ -333,11 +350,6 @@ namespace nb3.Vis
             //text.Modelview = overlayModelview;
         }
 
-        // this will run on NAudio's playback thread.
-        public void AddSample(AudioAnalysisSample sample)
-        {
-            SampleQueue.Enqueue(new StrongBox<AudioAnalysisSample>(sample));
-        }
 
         //private void OnPlayerStart(object sender, Player.PlayerStartEventArgs e)
         //{
