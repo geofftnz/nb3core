@@ -75,6 +75,7 @@ namespace nb3.Player
             else if (fileName.EndsWith(".flac", StringComparison.OrdinalIgnoreCase))
             {
                 //readerStream = new Mp3FileReader(fileName);
+                //readerStream = new NAudio.Flac.FlacReader(fileName);
                 readerStream = new NAudio.Flac.FlacReader(fileName);
             }
             else if (fileName.EndsWith(".aiff"))
