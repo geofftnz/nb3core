@@ -139,7 +139,7 @@ namespace nb3.Vis
             components.Add(text = new TextManager("texmgr", font), 2);
             components.Add(keyboardActions = new KeyboardActionManager() { KeyboardPriority = int.MaxValue }, 1);
             components.Add(globalTextures);
-            components.Add(frameCounter = new OpenTKExtensions.Components.FrameCounter(font));
+            components.Add(frameCounter = new OpenTKExtensions.Components.FrameCounter(font) { TextSize = 0.0005f});
             components.Add(switcher = new ComponentSwitcher() { KeyForward = new KeySpec(Keys.Tab), KeyBackward = new KeySpec(Keys.Tab, KeyModifiers.Shift) });
 
             switcher.Add(new Renderers.AnalysisDebugRenderer(font, Player));
