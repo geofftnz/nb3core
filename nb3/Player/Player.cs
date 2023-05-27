@@ -76,6 +76,7 @@ namespace nb3.Player
             }
 
             output?.Dispose();
+            output = null;
 
             reader?.Close();
             reader?.Dispose();

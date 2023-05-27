@@ -106,7 +106,7 @@ vec3 getFreqColour(float f)
 }
 
 
-//From Dave (https://www.shadertoy.com/view/XlfGWN)
+//From Dave (https://www.shadertoy.com/view/4djSRW)
 float hash13(vec3 p){
 	p  = fract(p * vec3(.16532,.17369,.15787));
     p += dot(p.xyz, p.yzx + 19.19);
@@ -202,7 +202,7 @@ PosCol flow1(vec2 coord, float detail)
 	else
 	{
 		// fade in alpha, clamp to max
-		col0.a = min(0.1,col0.a + 0.002);
+		col0.a = min(0.5,col0.a + 0.002);
 	}
 
 	// decay motion
@@ -249,7 +249,7 @@ PosCol flow1(vec2 coord, float detail)
 	p = p0 + v;
 	//p = p0 + v * (1.+.5*hash13(vec3(coord,1.))); // noise in velocity
 
-	blur = pow(blur,5.) * 0.002;
+	blur = length(p)*0.002 + pow(blur,5.) * 0.002;
 	p.x += (hash13(vec3(coord,time * 17.)) - .5) * blur;
 	p.y += (hash13(vec3(coord,time * 37.)) - .5) * blur;
 	p.z += (hash13(vec3(coord,time * 57.)) - .5) * blur;
@@ -269,7 +269,7 @@ vec3 getMPFFColour(float time, float freq)
 	for (float markerIndex = 0.; markerIndex < 5.; markerIndex += 1.)
 	{
 		float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);
-		float da = max(0.0,getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time)-0.05);
+		float da = pow(max(0.0,getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time)-0.05),0.5) * 0.5;
 
 		float a = (1.0 - smoothstep(abs(freq - df),0.0,0.0002)) * pow(da,5.)*2000.0;
 		a += (1.0 - smoothstep(abs(freq - df),0.0,0.002)) * pow(da,3.)*100.0;
@@ -285,8 +285,9 @@ vec3 getMPFFColour(float time, float freq)
 PosCol blobs1(vec2 coord, float detail)
 {
 	vec3 p = vec3(0.0);
-	float s = 1.5;	// particle size
+	float s = 2.5;	// particle size
 	vec4 col = vec4(1.0,0.1,0.05,0.1);
+	float max_alpha = 0.4;
 
 	// select filter we're following
 	float currentfilter = floor(coord.x * 5.0) * 2.;  // pairs of freq,level
@@ -332,7 +333,7 @@ PosCol blobs1(vec2 coord, float detail)
 	else
 	{
 		// fade in alpha, clamp to max
-		col0.a = min(0.1,col0.a + 0.002);
+		col0.a = min(max_alpha,col0.a + 0.02);
 	}
 
 	// decay motion
@@ -383,6 +384,13 @@ PosCol blobs1(vec2 coord, float detail)
 	// move
 	p = p0 + v * 0.5;
 	//p.z = 0.;
+
+	// blur
+	float blur = dot(p,p)*0.001;
+	p.x += (hash13(vec3(coord,time * 17.)) - .5) * blur;
+	p.y += (hash13(vec3(coord,time * 37.)) - .5) * blur;
+	p.z += (hash13(vec3(coord,time * 57.)) - .5) * blur;
+
 
 	//col = mix(col,vec4(getFreqColour(filterfreq),4. * pow(filterlevel,3.0)),0.5);
 	//col = col0;

@@ -140,6 +140,10 @@ namespace nb3.Player
         /// <returns>Number of samples read</returns>
         public int Read(float[] buffer, int offset, int count)
         {
+            if (buffer == null)
+            {
+                return 0;
+            }
             lock (lockObject)
             {
                 try
