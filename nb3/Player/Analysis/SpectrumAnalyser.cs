@@ -34,6 +34,7 @@ namespace nb3.Player.Analysis
 
             // The order of these is important as they define where filter outputs end up in the analysis data texture.
             AddFilter(new BeatFinderFilter("BEAT1", 0, Globals.SPECTRUM2RES, 0.25f));
+            //AddFilter(new BeatFinderFilter("BEAT2", 0, Globals.SPECTRUM2RES, 0.25f) { FourBeatCorrelation = true });
 
             AddFilter(new PeakFrequencyFilter("PFF", 12, Globals.SPECTRUMRES / 3 - 12));
             //AddFilter(new MultiPeakFrequencyFilter("MPFF", 12, Globals.SPECTRUMRES / 3 - 12));

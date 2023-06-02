@@ -1,4 +1,4 @@
-﻿#version 450
+#version 450
 precision highp float;
 layout (location = 0) in vec2 texcoord;
 layout (location = 0) out vec4 out_Pos;
@@ -268,18 +268,26 @@ vec3 getMPFFColour(float time, float freq)
 
 	for (float markerIndex = 0.; markerIndex < 5.; markerIndex += 1.)
 	{
-		float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time);
-		float da = max(0.0,getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time)-0.05);
 
-		float a = 0.;
+		for (float t = 0.; t < 4.; t+= 1.)
+		{
 
-		a += (1./(1. + 1000. * abs(freq-df))) * da * 2.;
-		a += (1.0 - smoothstep(abs(freq - df),0.0,0.0002)) * pow(da,5.)*2000.0;
-		//a += (1.0 - smoothstep(abs(freq - df),0.0,0.002)) * pow(da,3.)*100.0;
-		//a = smoothstep(a,0.2,0.8);
-		col += getFreqColour(df) * a;
-		//col += hsv2rgb(vec3(df*3.,0.95,0.9)) * a;
-		//col += vec3(0.4,0.1,1.0) * a;
+			float df = getAudioDataSample(audioDataTex,A_MPFF_Freq1 + markerIndex * 2.,time - t/1024.);
+			float da = getAudioDataSample(audioDataTex,A_MPFF_Level1 + markerIndex * 2.,time - t/1024.);
+
+			float a = 0.;
+
+			//a += (1./(1. + 50. * abs(freq-df))) * da * 0.1;
+			a += (1./(1. + 2000. * abs(freq-df))) * da * 0.5;
+
+			//a += (1.0 - smoothstep(abs(freq - df),0.0,0.0005)) * pow(da,4.)*500.0;
+			//a += (1.0 - smoothstep(abs(freq - df),0.0,0.001)) * pow(da,3.)*4.0;
+			//a += (1.0 - smoothstep(abs(freq - df),0.0,0.05)) * pow(da,2.)*0.2;
+			//a = smoothstep(a,0.2,0.8);
+			col += getFreqColour(df) * a / (t * 0.5 + 1.);
+			//col += hsv2rgb(vec3(df*3.,0.95,0.9)) * a;
+			//col += vec3(0.4,0.1,1.0) * a;
+		}
 	}
 
 	return col ;	
@@ -346,7 +354,7 @@ PosCol blobs1(vec2 coord, float detail)
 	//p0 *= 0.999;
 
 	vec3 pv = p0 * detail;
-	float a = 0.03;
+	float a = 0.01;
 
 	float octaves = min(3.0, 1.0 + complexity * 4.);
 	float last_octave_scale = fract(octaves);
@@ -376,16 +384,19 @@ PosCol blobs1(vec2 coord, float detail)
 	float sphd = 0.0; //filterfreq * 5.;  // distance of sphere from centre
 	//float sphr = 0.1; //0.1 / (1.0 + 4. * pow(filterlevel,3.0)); //radius of sphere
 	//float sphr = 0.7 / (1.0 + 4. * pow(filterlevel,3.0)); //radius of sphere
+	
 	float sphr = pow(filterfreq,0.5);
+	//float sphr = 0.5;
+	
 	vec3 sph = vec3(cos(spha) * sphd, -sin(spha) * sphd, 0.);
 
 	// attract to sphere
 	float distToSphere = length(p0 - sph) - sphr;
-	v += -normalize(p0 - sph) * distToSphere * 0.1;
+	v += -normalize(p0 - sph) * distToSphere * 0.02;
 
 
 	// move
-	p = p0 + v * 0.5;
+	p = p0 + v * (0.1 + detail * 0.2);
 	//p.z = 0.;
 
 	// blur
@@ -399,8 +410,12 @@ PosCol blobs1(vec2 coord, float detail)
 	//col = col0;
 	//float f = mix(sphr,length(p),0.7);
 	//float f = sphr;
-	float f = fscale(length(p)*0.8);
-	col = mix(col0,vec4(getMPFFColour(currentPositionEst,f),1.),0.2);
+
+	//float f = fscale(length(p)*0.8);
+	//float f = filterfreq; //fscale(filterfreq);
+	float f = fscale(length(p.xyz)*0.8);
+
+	col = mix(col0,vec4(getMPFFColour(currentPositionEst,f),1.),0.5);
 
 	return PosCol(vec4(p,s),col);
 }
@@ -415,7 +430,7 @@ void main(void)
 	PosCol a;
 
 	a = texcoord.y > 0.5 ? flow1(texcoord, detail) : blobs1(texcoord, detail * 0.8);
-	//a = blobs1(texcoord);
+	//a = blobs1(texcoord, detail * 0.8);
 
 	out_Pos = a.pos;
 	out_Col = a.col;

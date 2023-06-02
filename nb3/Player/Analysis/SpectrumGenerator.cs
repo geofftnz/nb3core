@@ -34,7 +34,7 @@ namespace nb3.Player.Analysis
         private int channels;
 
         //private const int fftSize = Globals.SPECTRUMRES * 2;
-        private const int targetFrameRate = 180;
+        private const int targetFrameRate = Globals.AUDIOFRAMERATE;
 
         private int frameInterval;
         private int sampleCounter = 0;

@@ -121,7 +121,7 @@ void main(void)
    //col = col * whiteScale;
 
 	// gamma
-	col.rgb = pow(col,vec3(1./2.2));
+	col.rgb = pow(col,vec3(1./2.0));
 
 	//col.rgb = col.rgb / (vec3(1.)+col.rgb);
 	// todo: tonemap

@@ -1,4 +1,5 @@
 ﻿using NAudio.Dsp;
+using nb3.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,7 +14,7 @@ namespace nb3.Player.Analysis
     public class AudioAnalysisSample
     {
         public int Samples { get; set; } = 1;
-        public double SampleSeconds { get; set; } = 1.0 / 180.0;  // Number of seconds covered by this frame
+        public double SampleSeconds { get; set; } = 1.0 / Globals.AUDIOFRAMERATE;  // Number of seconds covered by this frame
         public float[] Spectrum { get; set; } = null;
         public float[] Spectrum2 { get; set; } = null;
         public float[] AudioData { get; set; } = null;
